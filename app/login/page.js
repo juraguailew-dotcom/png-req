@@ -4,10 +4,9 @@ import { createClient } from "../lib/supabase";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const supabase = createClient();
   const router = useRouter();
 
-  const [mode, setMode] = useState("login"); // 'login' | 'register'
+  const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -20,9 +19,8 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-
+    const supabase = createClient();
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
     if (error) {
       setError(error.message);
     } else {
@@ -37,15 +35,12 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-
+    const supabase = createClient();
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: { full_name: fullName, role },
-      },
+      options: { data: { full_name: fullName, role } },
     });
-
     if (error) {
       setError(error.message);
     } else {

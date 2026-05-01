@@ -4,7 +4,6 @@ import { createClient } from "../lib/supabase";
 import { useRouter } from "next/navigation";
 
 export default function AdminPage() {
-  const supabase = createClient();
   const router = useRouter();
 
   const [user, setUser] = useState(null);
@@ -13,6 +12,16 @@ export default function AdminPage() {
   const [pageLoading, setPageLoading] = useState(true);
 
   useEffect(() => {
+    const supabase = createClient();
+
+    const fetchAll = async () => {
+      const { data, error } = await supabase
+        .from("requisitions")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (!error) setRequests(data);
+    };
+
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || user.user_metadata?.role !== "admin") { router.push("/"); return; }
@@ -23,15 +32,8 @@ export default function AdminPage() {
     init();
   }, []);
 
-  const fetchAll = async () => {
-    const { data, error } = await supabase
-      .from("requisitions")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (!error) setRequests(data);
-  };
-
   const updateStatus = async (id, status) => {
+    const supabase = createClient();
     const { error } = await supabase
       .from("requisitions")
       .update({ status, reviewed_by: user.user_metadata?.full_name || user.email, reviewed_at: new Date().toISOString() })
@@ -40,6 +42,7 @@ export default function AdminPage() {
   };
 
   const signOut = async () => {
+    const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/login");
   };

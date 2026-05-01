@@ -4,7 +4,6 @@ import { createClient } from "./lib/supabase";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const supabase = createClient();
   const router = useRouter();
 
   const [user, setUser] = useState(null);
@@ -15,6 +14,17 @@ export default function Home() {
   const [pageLoading, setPageLoading] = useState(true);
 
   useEffect(() => {
+    const supabase = createClient();
+
+    const fetchRequests = async (uid) => {
+      const { data, error } = await supabase
+        .from("requisitions")
+        .select("*")
+        .eq("user_id", uid)
+        .order("created_at", { ascending: false });
+      if (!error) setRequests(data);
+    };
+
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/login"); return; }
@@ -25,20 +35,11 @@ export default function Home() {
     init();
   }, []);
 
-  const fetchRequests = async (uid) => {
-    const { data, error } = await supabase
-      .from("requisitions")
-      .select("*")
-      .eq("user_id", uid)
-      .order("created_at", { ascending: false });
-    if (!error) setRequests(data);
-  };
-
   const submitRequest = async () => {
     if (!item.trim()) return alert("Please enter an item name.");
     if (quantity < 1) return alert("Quantity must be at least 1.");
     setLoading(true);
-
+    const supabase = createClient();
     const { error } = await supabase.from("requisitions").insert([{
       item_name: item.trim(),
       quantity,
@@ -46,19 +47,25 @@ export default function Home() {
       user_id: user.id,
       submitted_by: user.user_metadata?.full_name || user.email,
     }]);
-
     if (error) alert("Error: " + error.message);
-    else { setItem(""); setQuantity(1); await fetchRequests(user.id); }
+    else {
+      setItem("");
+      setQuantity(1);
+      const { data } = await supabase.from("requisitions").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+      if (data) setRequests(data);
+    }
     setLoading(false);
   };
 
   const deleteRequest = async (id) => {
     if (!confirm("Delete this request?")) return;
+    const supabase = createClient();
     const { error } = await supabase.from("requisitions").delete().eq("id", id).eq("user_id", user.id);
     if (!error) setRequests((prev) => prev.filter((r) => r.id !== id));
   };
 
   const signOut = async () => {
+    const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/login");
   };
