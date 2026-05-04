@@ -10,7 +10,6 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState("contractor");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -35,16 +34,16 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName, role } },
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, full_name: fullName }),
     });
-    if (error) {
-      setError(error.message);
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error);
     } else {
-      setMessage("Account created! You can now log in.");
+      setMessage(data.message);
       setMode("login");
     }
     setLoading(false);
@@ -133,16 +132,6 @@ export default function LoginPage() {
                 className="w-full border-2 border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none"
                 placeholder="Min. 6 characters"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-slate-600 mb-1">Role</label>
-              <select
-                value={role} onChange={(e) => setRole(e.target.value)}
-                className="w-full border-2 border-slate-200 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none bg-white"
-              >
-                <option value="contractor">Contractor</option>
-                <option value="admin">Admin / Shop Manager</option>
-              </select>
             </div>
             <button
               type="submit" disabled={loading}
