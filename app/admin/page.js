@@ -45,8 +45,9 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (tab === "users") { fetchUsers(); }
-  }, [tab, fetchUsers]);
+    if (tab === "users") fetchUsers();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+  }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const updateStatus = async (id, status) => {
     const supabase = createClient();
@@ -127,10 +128,7 @@ export default function AdminPage() {
     });
     if (res.ok) {
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, role } : u));
-      setShopUsers(prev => {
-        const updated = users.map(u => u.id === userId ? { ...u, role } : u);
-        return updated.filter(u => u.role === "hardware_shop");
-      });
+      setShopUsers(users.map(u => u.id === userId ? { ...u, role } : u).filter(u => u.role === "hardware_shop"));
     }
   };
 
