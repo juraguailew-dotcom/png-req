@@ -1,29 +1,27 @@
 "use client";
 import { useState, useEffect } from "react";
-import { createClient } from "./lib/supabase";
+import { createClient } from "../lib/supabase";
 import { useRouter } from "next/navigation";
 
-export default function Home() {
+export default function ShopPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
-  const [tab, setTab] = useState("requests");
-  const [item, setItem] = useState("");
-  const [quantity, setQuantity] = useState(1);
+  const [tab, setTab] = useState("assigned");
   const [requests, setRequests] = useState([]);
   const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [commentMap, setCommentMap] = useState({});
   const [pageLoading, setPageLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(null);
 
   useEffect(() => {
     const supabase = createClient();
-
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.push("/login"); return; }
+      if (!user || user.app_metadata?.role !== "hardware_shop") { router.push("/login"); return; }
       setUser(user);
 
       const [{ data: reqs }, { data: notifs }] = await Promise.all([
-        supabase.from("requisitions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+        supabase.from("requisitions").select("*").eq("assigned_shop_id", user.id).order("created_at", { ascending: false }),
         supabase.from("notifications").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
       ]);
       if (reqs) setRequests(reqs);
@@ -33,32 +31,26 @@ export default function Home() {
     init();
   }, []);
 
-  const submitRequest = async () => {
-    if (!item.trim()) return alert("Please enter an item name.");
-    if (quantity < 1) return alert("Quantity must be at least 1.");
-    setLoading(true);
+  const fulfill = async (req) => {
+    setActionLoading(req.id);
     const supabase = createClient();
-    const { error } = await supabase.from("requisitions").insert([{
-      item_name: item.trim(),
-      quantity,
-      status: "Pending",
-      user_id: user.id,
-      submitted_by: user.user_metadata?.full_name || user.email,
-    }]);
-    if (error) alert("Error: " + error.message);
-    else {
-      setItem(""); setQuantity(1);
-      const { data } = await supabase.from("requisitions").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
-      if (data) setRequests(data);
+    const comment = commentMap[req.id] || "";
+    const { error } = await supabase.from("requisitions").update({
+      status: "Fulfilled",
+      fulfilled_by: user.user_metadata?.full_name || user.email,
+      fulfilled_at: new Date().toISOString(),
+      comment: comment || null,
+    }).eq("id", req.id);
+    if (!error) {
+      setRequests(prev => prev.map(r => r.id === req.id
+        ? { ...r, status: "Fulfilled", fulfilled_by: user.user_metadata?.full_name || user.email, fulfilled_at: new Date().toISOString(), comment }
+        : r
+      ));
+      setCommentMap(prev => { const n = { ...prev }; delete n[req.id]; return n; });
+    } else {
+      alert("Error: " + error.message);
     }
-    setLoading(false);
-  };
-
-  const deleteRequest = async (id) => {
-    if (!confirm("Delete this request?")) return;
-    const supabase = createClient();
-    const { error } = await supabase.from("requisitions").delete().eq("id", id).eq("user_id", user.id);
-    if (!error) setRequests((prev) => prev.filter((r) => r.id !== id));
+    setActionLoading(null);
   };
 
   const markAllRead = async () => {
@@ -76,11 +68,11 @@ export default function Home() {
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
+  const pending = requests.filter(r => r.status === "Approved");
+  const fulfilled = requests.filter(r => r.status === "Fulfilled");
 
   const statusStyle = {
-    Pending: "bg-yellow-100 text-yellow-700",
     Approved: "bg-green-100 text-green-700",
-    Rejected: "bg-red-100 text-red-700",
     Fulfilled: "bg-blue-100 text-blue-700",
   };
 
@@ -95,7 +87,7 @@ export default function Home() {
       <nav className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center shadow-sm">
         <div>
           <h1 className="text-lg font-black text-blue-900">PNG Requisition System</h1>
-          <p className="text-xs text-slate-400">Welcome, {user?.user_metadata?.full_name || user?.email}</p>
+          <p className="text-xs text-slate-400">Hardware Shop · {user?.user_metadata?.full_name || user?.email}</p>
         </div>
         <div className="flex items-center gap-4">
           <button onClick={() => { setTab("notifications"); markAllRead(); }} className="relative text-slate-500 hover:text-blue-600 transition-colors">
@@ -110,13 +102,13 @@ export default function Home() {
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto p-6 md:p-10">
+      <div className="max-w-5xl mx-auto p-6 md:p-10">
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           {[
-            { label: "Total", value: requests.length, color: "text-blue-600" },
-            { label: "Pending", value: requests.filter(r => r.status === "Pending").length, color: "text-yellow-600" },
-            { label: "Approved", value: requests.filter(r => r.status === "Approved").length, color: "text-green-600" },
+            { label: "Total Assigned", value: requests.length, color: "text-blue-600" },
+            { label: "Pending Fulfillment", value: pending.length, color: "text-yellow-600" },
+            { label: "Fulfilled", value: fulfilled.length, color: "text-green-600" },
           ].map(({ label, value, color }) => (
             <div key={label} className="bg-white rounded-xl p-4 shadow-sm border border-slate-200 text-center">
               <p className={`text-2xl font-black ${color}`}>{value}</p>
@@ -127,7 +119,7 @@ export default function Home() {
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6">
-          {["requests", "notifications", "profile"].map((t) => (
+          {["assigned", "fulfilled", "notifications", "profile"].map((t) => (
             <button key={t} onClick={() => { setTab(t); if (t === "notifications") markAllRead(); }}
               className={`px-4 py-2 rounded-lg text-sm font-bold capitalize transition-all relative ${tab === t ? "bg-blue-600 text-white" : "bg-white text-slate-500 border border-slate-200 hover:border-blue-300"}`}>
               {t}
@@ -138,59 +130,70 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Requests Tab */}
-        {tab === "requests" && (
-          <div className="grid md:grid-cols-2 gap-8">
-            <section className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-              <h2 className="text-lg font-bold mb-4">New Request</h2>
-              <label className="block text-sm font-bold text-slate-600 mb-1">Material / Item Name</label>
-              <input type="text" value={item} onChange={(e) => setItem(e.target.value)}
-                className="border-2 border-slate-200 p-3 w-full mb-4 rounded-lg text-sm focus:border-blue-500 outline-none"
-                placeholder="e.g. Roofing Sheets" />
-              <label className="block text-sm font-bold text-slate-600 mb-1">Quantity</label>
-              <input type="number" min={1} value={quantity} onChange={(e) => setQuantity(Number(e.target.value))}
-                className="border-2 border-slate-200 p-3 w-full mb-4 rounded-lg text-sm focus:border-blue-500 outline-none" />
-              <button onClick={submitRequest} disabled={loading}
-                className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-bold py-3 px-4 rounded-lg w-full transition-all">
-                {loading ? "Submitting..." : "Submit Request"}
-              </button>
-            </section>
-
-            <section>
-              <h2 className="text-lg font-bold mb-4">My Requests</h2>
-              <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
-                {requests.length === 0 && <p className="text-slate-400 italic text-sm">No requests yet.</p>}
-                {requests.map((req) => (
-                  <div key={req.id} className="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
-                    <div className="flex justify-between items-start">
+        {/* Assigned Tab */}
+        {tab === "assigned" && (
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            {pending.length === 0 ? (
+              <p className="text-slate-400 italic text-sm p-6">No pending requisitions assigned to you.</p>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {pending.map((req) => (
+                  <div key={req.id} className="p-5">
+                    <div className="flex justify-between items-start mb-3">
                       <div>
-                        <p className="font-bold text-slate-800 text-sm">{req.item_name}</p>
-                        <p className="text-xs text-slate-500">Qty: {req.quantity} · {new Date(req.created_at).toLocaleDateString()}</p>
+                        <p className="font-bold text-slate-800">{req.item_name}</p>
+                        <p className="text-xs text-slate-500 mt-1">Qty: {req.quantity} · Submitted by {req.submitted_by || "—"} · {new Date(req.created_at).toLocaleDateString()}</p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-black uppercase ${statusStyle[req.status] || "bg-slate-100 text-slate-600"}`}>
-                          {req.status}
-                        </span>
-                        {req.status === "Pending" && (
-                          <button onClick={() => deleteRequest(req.id)} className="text-slate-300 hover:text-red-500 transition-colors text-lg leading-none">×</button>
-                        )}
-                      </div>
+                      <span className={`px-2 py-1 rounded-full text-xs font-black uppercase ${statusStyle[req.status]}`}>{req.status}</span>
                     </div>
-                    {req.comment && (
-                      <p className="mt-2 text-xs text-slate-500 bg-slate-50 rounded p-2 border border-slate-100">
-                        💬 {req.comment}
-                      </p>
-                    )}
-                    {req.assigned_shop_name && req.status === "Approved" && (
-                      <p className="mt-1 text-xs text-blue-600 font-semibold">🏪 Assigned to: {req.assigned_shop_name}</p>
-                    )}
-                    {req.status === "Fulfilled" && req.fulfilled_by && (
-                      <p className="mt-1 text-xs text-green-600 font-semibold">✅ Fulfilled by {req.fulfilled_by} on {new Date(req.fulfilled_at).toLocaleDateString()}</p>
-                    )}
+                    <textarea
+                      value={commentMap[req.id] || ""}
+                      onChange={(e) => setCommentMap(prev => ({ ...prev, [req.id]: e.target.value }))}
+                      placeholder="Add a comment (optional)..."
+                      rows={2}
+                      className="w-full border-2 border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none mb-3 resize-none"
+                    />
+                    <button
+                      onClick={() => fulfill(req)}
+                      disabled={actionLoading === req.id}
+                      className="px-4 py-2 bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white text-sm font-bold rounded-lg transition-all"
+                    >
+                      {actionLoading === req.id ? "Processing..." : "Mark as Fulfilled"}
+                    </button>
                   </div>
                 ))}
               </div>
-            </section>
+            )}
+          </div>
+        )}
+
+        {/* Fulfilled Tab */}
+        {tab === "fulfilled" && (
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            {fulfilled.length === 0 ? (
+              <p className="text-slate-400 italic text-sm p-6">No fulfilled requisitions yet.</p>
+            ) : (
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                  <tr>
+                    {["Item", "Qty", "Submitted By", "Fulfilled On", "Comment"].map(h => (
+                      <th key={h} className="text-left px-4 py-3 text-xs font-black text-slate-500 uppercase tracking-wide">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {fulfilled.map((req) => (
+                    <tr key={req.id} className="hover:bg-slate-50">
+                      <td className="px-4 py-3 font-semibold text-slate-800">{req.item_name}</td>
+                      <td className="px-4 py-3 text-slate-600">{req.quantity}</td>
+                      <td className="px-4 py-3 text-slate-600">{req.submitted_by || "—"}</td>
+                      <td className="px-4 py-3 text-slate-500">{req.fulfilled_at ? new Date(req.fulfilled_at).toLocaleDateString() : "—"}</td>
+                      <td className="px-4 py-3 text-slate-500 italic">{req.comment || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         )}
 
@@ -216,7 +219,7 @@ export default function Home() {
             <h2 className="text-lg font-bold mb-6">My Profile</h2>
             <div className="space-y-4">
               <div>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Full Name</p>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Shop / Business Name</p>
                 <p className="text-slate-800 font-semibold mt-1">{user?.user_metadata?.full_name || "—"}</p>
               </div>
               <div>
@@ -225,24 +228,18 @@ export default function Home() {
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Role</p>
-                <span className="inline-block mt-1 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-black rounded-full uppercase">
-                  {user?.app_metadata?.role || "contractor"}
-                </span>
-              </div>
-              <div>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Member Since</p>
-                <p className="text-slate-800 font-semibold mt-1">{user?.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}</p>
+                <span className="inline-block mt-1 px-3 py-1 bg-orange-100 text-orange-700 text-xs font-black rounded-full uppercase">Hardware Shop</span>
               </div>
               <div className="pt-2 border-t border-slate-100">
                 <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Summary</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-slate-50 rounded-lg p-3 text-center">
                     <p className="text-xl font-black text-blue-600">{requests.length}</p>
-                    <p className="text-xs text-slate-500">Total Requests</p>
+                    <p className="text-xs text-slate-500">Total Assigned</p>
                   </div>
                   <div className="bg-slate-50 rounded-lg p-3 text-center">
-                    <p className="text-xl font-black text-green-600">{requests.filter(r => r.status === "Approved" || r.status === "Fulfilled").length}</p>
-                    <p className="text-xs text-slate-500">Approved</p>
+                    <p className="text-xl font-black text-green-600">{fulfilled.length}</p>
+                    <p className="text-xs text-slate-500">Fulfilled</p>
                   </div>
                 </div>
               </div>

@@ -22,23 +22,31 @@ export async function middleware(request) {
   );
 
   const { data: { user } } = await supabase.auth.getUser();
-
   const { pathname } = request.nextUrl;
 
-  // Redirect unauthenticated users to /login
   if (!user && pathname !== '/login') {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Redirect logged-in users away from /login
   if (user && pathname === '/login') {
-    const role = user.user_metadata?.role;
-    return NextResponse.redirect(new URL(role === 'admin' ? '/admin' : '/', request.url));
+    const role = user.app_metadata?.role;
+    if (role === 'admin') return NextResponse.redirect(new URL('/admin', request.url));
+    if (role === 'hardware_shop') return NextResponse.redirect(new URL('/shop', request.url));
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // Block contractors from /admin
-  if (user && pathname.startsWith('/admin') && user.user_metadata?.role !== 'admin') {
-    return NextResponse.redirect(new URL('/', request.url));
+  if (user) {
+    const role = user.app_metadata?.role;
+    if (pathname.startsWith('/admin') && role !== 'admin') {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+    if (pathname.startsWith('/shop') && role !== 'hardware_shop') {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+    // Contractors shouldn't access /admin or /shop
+    if (role === 'hardware_shop' && pathname === '/') {
+      return NextResponse.redirect(new URL('/shop', request.url));
+    }
   }
 
   return supabaseResponse;

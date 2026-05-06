@@ -1,0 +1,8 @@
+
+> png-requisition-system@0.1.0 build
+> next build
+
+
+> Build error occurred
+TypeError: generate is not a function
+    at ignore-listed frames
