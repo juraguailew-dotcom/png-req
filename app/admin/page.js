@@ -45,8 +45,8 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (tab === "users") fetchUsers();
-  }, [tab]);
+    if (tab === "users") { fetchUsers(); }
+  }, [tab, fetchUsers]);
 
   const updateStatus = async (id, status) => {
     const supabase = createClient();
