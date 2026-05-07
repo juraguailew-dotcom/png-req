@@ -1,19 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from './lib/supabase';
 import { useRouter } from 'next/navigation';
-import Header from './components/shared/Header';
-import ContractorDashboard from './components/contractor/Dashboard';
+import { createClient } from '@/app/lib/supabase';
+import Header from '@/app/components/shared/Header';
+import CreateRequisition from '@/app/components/contractor/CreateRequisition';
 
-export default function Home() {
-  const router = useRouter();
+export default function NewRequisitionPage() {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const supabase = createClient();
-
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -21,26 +19,17 @@ export default function Home() {
         return;
       }
       setUser(user);
-      setLoading(false);
     };
-
     init();
   }, [router]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-500 text-lg">Loading...</div>
-      </div>
-    );
-  }
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header user={user} />
-      
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <ContractorDashboard />
+        <CreateRequisition />
       </main>
     </div>
   );

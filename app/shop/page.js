@@ -1,252 +1,216 @@
-"use client";
-import { useState, useEffect } from "react";
-import { createClient } from "../lib/supabase";
-import { useRouter } from "next/navigation";
+'use client';
+
+import { useState, useEffect } from 'react';
+import { createClient } from '../lib/supabase';
+import { useRouter } from 'next/navigation';
+import Header from '../components/shared/Header';
+import { formatCurrency } from '../lib/utils/currency';
 
 export default function ShopPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
-  const [tab, setTab] = useState("assigned");
-  const [requests, setRequests] = useState([]);
-  const [notifications, setNotifications] = useState([]);
-  const [commentMap, setCommentMap] = useState({});
-  const [pageLoading, setPageLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(null);
+  const [analytics, setAnalytics] = useState(null);
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [lowStockProducts, setLowStockProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const supabase = createClient();
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user || user.app_metadata?.role !== "hardware_shop") { router.push("/login"); return; }
+      if (!user || user.app_metadata?.role !== 'hardware_shop') {
+        router.push('/login');
+        return;
+      }
       setUser(user);
-
-      const [{ data: reqs }, { data: notifs }] = await Promise.all([
-        supabase.from("requisitions").select("*").eq("assigned_shop_id", user.id).order("created_at", { ascending: false }),
-        supabase.from("notifications").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
-      ]);
-      if (reqs) setRequests(reqs);
-      if (notifs) setNotifications(notifs);
-      setPageLoading(false);
+      fetchDashboardData();
     };
     init();
-  }, []);
+  }, [router]);
 
-  const fulfill = async (req) => {
-    setActionLoading(req.id);
-    const supabase = createClient();
-    const comment = commentMap[req.id] || "";
-    const { error } = await supabase.from("requisitions").update({
-      status: "Fulfilled",
-      fulfilled_by: user.user_metadata?.full_name || user.email,
-      fulfilled_at: new Date().toISOString(),
-      comment: comment || null,
-    }).eq("id", req.id);
-    if (!error) {
-      setRequests(prev => prev.map(r => r.id === req.id
-        ? { ...r, status: "Fulfilled", fulfilled_by: user.user_metadata?.full_name || user.email, fulfilled_at: new Date().toISOString(), comment }
-        : r
-      ));
-      setCommentMap(prev => { const n = { ...prev }; delete n[req.id]; return n; });
-    } else {
-      alert("Error: " + error.message);
+  const fetchDashboardData = async () => {
+    try {
+      const [analyticsRes, ordersRes, productsRes] = await Promise.all([
+        fetch('/api/analytics?period=30'),
+        fetch('/api/requisitions?limit=5'),
+        fetch('/api/products?limit=100'),
+      ]);
+
+      const analyticsData = await analyticsRes.json();
+      const ordersData = await ordersRes.json();
+      const productsData = await productsRes.json();
+
+      setAnalytics(analyticsData.analytics);
+      setRecentOrders(ordersData.requisitions || []);
+      
+      // Filter low stock products
+      const lowStock = productsData.products?.filter(
+        p => p.stock <= (p.low_stock_threshold || 10)
+      ) || [];
+      setLowStockProducts(lowStock);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
     }
-    setActionLoading(null);
   };
 
-  const markAllRead = async () => {
-    const supabase = createClient();
-    const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
-    if (!unreadIds.length) return;
-    await supabase.from("notifications").update({ read: true }).in("id", unreadIds);
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
+  if (!user || loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    );
+  }
 
-  const signOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/login");
-  };
-
-  const unreadCount = notifications.filter(n => !n.read).length;
-  const pending = requests.filter(r => r.status === "Approved");
-  const fulfilled = requests.filter(r => r.status === "Fulfilled");
-
-  const statusStyle = {
-    Approved: "bg-green-100 text-green-700",
-    Fulfilled: "bg-blue-100 text-blue-700",
-  };
-
-  if (pageLoading) return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-      <p className="text-slate-400 animate-pulse">Loading...</p>
-    </div>
-  );
+  const stats = [
+    {
+      label: 'Total Orders',
+      value: analytics?.totalOrders || 0,
+      icon: '📦',
+      color: 'bg-blue-100 text-blue-600',
+    },
+    {
+      label: 'Pending Orders',
+      value: analytics?.pendingOrders || 0,
+      icon: '⏳',
+      color: 'bg-yellow-100 text-yellow-600',
+    },
+    {
+      label: 'Total Revenue',
+      value: formatCurrency(analytics?.totalRevenue || 0),
+      icon: '💰',
+      color: 'bg-green-100 text-green-600',
+    },
+    {
+      label: 'Average Rating',
+      value: analytics?.averageRating || '0.0',
+      icon: '⭐',
+      color: 'bg-purple-100 text-purple-600',
+    },
+  ];
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
-      <nav className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center shadow-sm">
-        <div>
-          <h1 className="text-lg font-black text-blue-900">PNG Requisition System</h1>
-          <p className="text-xs text-slate-400">Hardware Shop · {user?.user_metadata?.full_name || user?.email}</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <button onClick={() => { setTab("notifications"); markAllRead(); }} className="relative text-slate-500 hover:text-blue-600 transition-colors">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">{unreadCount}</span>
-            )}
-          </button>
-          <button onClick={signOut} className="text-sm text-slate-500 hover:text-red-600 font-semibold transition-colors">Sign Out</button>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-gray-50">
+      <Header user={user} />
 
-      <div className="max-w-5xl mx-auto p-6 md:p-10">
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          {[
-            { label: "Total Assigned", value: requests.length, color: "text-blue-600" },
-            { label: "Pending Fulfillment", value: pending.length, color: "text-yellow-600" },
-            { label: "Fulfilled", value: fulfilled.length, color: "text-green-600" },
-          ].map(({ label, value, color }) => (
-            <div key={label} className="bg-white rounded-xl p-4 shadow-sm border border-slate-200 text-center">
-              <p className={`text-2xl font-black ${color}`}>{value}</p>
-              <p className="text-xs text-slate-500 font-semibold mt-1">{label}</p>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Welcome Section */}
+        <div className="bg-gradient-to-r from-green-600 to-green-800 text-white rounded-lg p-6 mb-6">
+          <h1 className="text-3xl font-bold mb-2">Shop Dashboard</h1>
+          <p className="text-green-100">Manage your products, orders, and inventory</p>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+          {stats.map((stat, index) => (
+            <div key={index} className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
+                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                </div>
+                <div className={`text-3xl ${stat.color} w-12 h-12 rounded-lg flex items-center justify-center`}>
+                  {stat.icon}
+                </div>
+              </div>
             </div>
           ))}
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6">
-          {["assigned", "fulfilled", "notifications", "profile"].map((t) => (
-            <button key={t} onClick={() => { setTab(t); if (t === "notifications") markAllRead(); }}
-              className={`px-4 py-2 rounded-lg text-sm font-bold capitalize transition-all relative ${tab === t ? "bg-blue-600 text-white" : "bg-white text-slate-500 border border-slate-200 hover:border-blue-300"}`}>
-              {t}
-              {t === "notifications" && unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">{unreadCount}</span>
-              )}
-            </button>
-          ))}
-        </div>
-
-        {/* Assigned Tab */}
-        {tab === "assigned" && (
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            {pending.length === 0 ? (
-              <p className="text-slate-400 italic text-sm p-6">No pending requisitions assigned to you.</p>
-            ) : (
-              <div className="divide-y divide-slate-100">
-                {pending.map((req) => (
-                  <div key={req.id} className="p-5">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <p className="font-bold text-slate-800">{req.item_name}</p>
-                        <p className="text-xs text-slate-500 mt-1">Qty: {req.quantity} · Submitted by {req.submitted_by || "—"} · {new Date(req.created_at).toLocaleDateString()}</p>
-                      </div>
-                      <span className={`px-2 py-1 rounded-full text-xs font-black uppercase ${statusStyle[req.status]}`}>{req.status}</span>
-                    </div>
-                    <textarea
-                      value={commentMap[req.id] || ""}
-                      onChange={(e) => setCommentMap(prev => ({ ...prev, [req.id]: e.target.value }))}
-                      placeholder="Add a comment (optional)..."
-                      rows={2}
-                      className="w-full border-2 border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none mb-3 resize-none"
-                    />
-                    <button
-                      onClick={() => fulfill(req)}
-                      disabled={actionLoading === req.id}
-                      className="px-4 py-2 bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white text-sm font-bold rounded-lg transition-all"
-                    >
-                      {actionLoading === req.id ? "Processing..." : "Mark as Fulfilled"}
-                    </button>
-                  </div>
-                ))}
+        {/* Low Stock Alert */}
+        {lowStockProducts.length > 0 && (
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+            <div className="flex items-start">
+              <svg className="w-6 h-6 text-orange-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div className="flex-1">
+                <h3 className="font-semibold text-orange-900 mb-1">Low Stock Alert</h3>
+                <p className="text-sm text-orange-800">
+                  {lowStockProducts.length} product{lowStockProducts.length > 1 ? 's' : ''} running low on stock.
+                  <a href="/shop/inventory" className="ml-2 underline font-medium">View Inventory</a>
+                </p>
               </div>
-            )}
+            </div>
           </div>
         )}
 
-        {/* Fulfilled Tab */}
-        {tab === "fulfilled" && (
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            {fulfilled.length === 0 ? (
-              <p className="text-slate-400 italic text-sm p-6">No fulfilled requisitions yet.</p>
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <a
+            href="/shop/products"
+            className="bg-blue-600 text-white rounded-lg p-6 hover:bg-blue-700 transition text-center"
+          >
+            <div className="text-3xl mb-2">📦</div>
+            <h3 className="font-semibold">Manage Products</h3>
+            <p className="text-sm text-blue-100 mt-1">Add, edit, or remove products</p>
+          </a>
+
+          <a
+            href="/shop/orders"
+            className="bg-green-600 text-white rounded-lg p-6 hover:bg-green-700 transition text-center"
+          >
+            <div className="text-3xl mb-2">🛒</div>
+            <h3 className="font-semibold">View Orders</h3>
+            <p className="text-sm text-green-100 mt-1">Fulfill customer orders</p>
+          </a>
+
+          <a
+            href="/shop/analytics"
+            className="bg-purple-600 text-white rounded-lg p-6 hover:bg-purple-700 transition text-center"
+          >
+            <div className="text-3xl mb-2">📊</div>
+            <h3 className="font-semibold">Analytics</h3>
+            <p className="text-sm text-purple-100 mt-1">View sales and performance</p>
+          </a>
+        </div>
+
+        {/* Recent Orders */}
+        <div className="bg-white rounded-lg shadow">
+          <div className="p-6 border-b flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-gray-900">Recent Orders</h2>
+            <a href="/shop/orders" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+              View All →
+            </a>
+          </div>
+
+          <div className="overflow-x-auto">
+            {recentOrders.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">
+                <p>No orders yet</p>
+              </div>
             ) : (
-              <table className="w-full text-sm">
-                <thead className="bg-slate-50 border-b border-slate-200">
+              <table className="w-full">
+                <thead className="bg-gray-50">
                   <tr>
-                    {["Item", "Qty", "Submitted By", "Fulfilled On", "Comment"].map(h => (
-                      <th key={h} className="text-left px-4 py-3 text-xs font-black text-slate-500 uppercase tracking-wide">{h}</th>
-                    ))}
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Items</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {fulfilled.map((req) => (
-                    <tr key={req.id} className="hover:bg-slate-50">
-                      <td className="px-4 py-3 font-semibold text-slate-800">{req.item_name}</td>
-                      <td className="px-4 py-3 text-slate-600">{req.quantity}</td>
-                      <td className="px-4 py-3 text-slate-600">{req.submitted_by || "—"}</td>
-                      <td className="px-4 py-3 text-slate-500">{req.fulfilled_at ? new Date(req.fulfilled_at).toLocaleDateString() : "—"}</td>
-                      <td className="px-4 py-3 text-slate-500 italic">{req.comment || "—"}</td>
+                <tbody className="divide-y divide-gray-200">
+                  {recentOrders.map((order) => (
+                    <tr key={order.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 text-sm text-gray-900">#{order.id.slice(0, 8)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{order.contractor_name}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{order.items?.length || 0} items</td>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">{formatCurrency(order.total_amount)}</td>
+                      <td className="px-6 py-4">
+                        <span className="px-2 py-1 text-xs font-medium rounded-full capitalize bg-blue-100 text-blue-800">
+                          {order.status}
+                        </span>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
           </div>
-        )}
-
-        {/* Notifications Tab */}
-        {tab === "notifications" && (
-          <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <h2 className="text-lg font-bold mb-4">Notifications</h2>
-            {notifications.length === 0 && <p className="text-slate-400 italic text-sm">No notifications yet.</p>}
-            <div className="space-y-3">
-              {notifications.map((n) => (
-                <div key={n.id} className={`p-3 rounded-lg border text-sm ${n.read ? "bg-white border-slate-100 text-slate-500" : "bg-blue-50 border-blue-200 text-slate-800 font-semibold"}`}>
-                  <p>{n.message}</p>
-                  <p className="text-xs text-slate-400 mt-1">{new Date(n.created_at).toLocaleString()}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Profile Tab */}
-        {tab === "profile" && (
-          <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-md">
-            <h2 className="text-lg font-bold mb-6">My Profile</h2>
-            <div className="space-y-4">
-              <div>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Shop / Business Name</p>
-                <p className="text-slate-800 font-semibold mt-1">{user?.user_metadata?.full_name || "—"}</p>
-              </div>
-              <div>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Email</p>
-                <p className="text-slate-800 font-semibold mt-1">{user?.email}</p>
-              </div>
-              <div>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Role</p>
-                <span className="inline-block mt-1 px-3 py-1 bg-orange-100 text-orange-700 text-xs font-black rounded-full uppercase">Hardware Shop</span>
-              </div>
-              <div className="pt-2 border-t border-slate-100">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Summary</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-slate-50 rounded-lg p-3 text-center">
-                    <p className="text-xl font-black text-blue-600">{requests.length}</p>
-                    <p className="text-xs text-slate-500">Total Assigned</p>
-                  </div>
-                  <div className="bg-slate-50 rounded-lg p-3 text-center">
-                    <p className="text-xl font-black text-green-600">{fulfilled.length}</p>
-                    <p className="text-xs text-slate-500">Fulfilled</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-      </div>
-    </main>
+        </div>
+      </main>
+    </div>
   );
 }
