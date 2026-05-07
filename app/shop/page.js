@@ -14,20 +14,6 @@ export default function ShopPage() {
   const [lowStockProducts, setLowStockProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const supabase = createClient();
-    const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user || user.app_metadata?.role !== 'hardware_shop') {
-        router.push('/login');
-        return;
-      }
-      setUser(user);
-      fetchDashboardData();
-    };
-    init();
-  }, [router]);
-
   const fetchDashboardData = async () => {
     try {
       const [analyticsRes, ordersRes, productsRes] = await Promise.all([
@@ -54,6 +40,20 @@ export default function ShopPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const supabase = createClient();
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || user.app_metadata?.role !== 'hardware_shop') {
+        router.push('/login');
+        return;
+      }
+      setUser(user);
+      fetchDashboardData();
+    };
+    init();
+  }, [router]);
 
   if (!user || loading) {
     return (
@@ -96,7 +96,7 @@ export default function ShopPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
-        <div className="bg-gradient-to-r from-green-600 to-green-800 text-white rounded-lg p-6 mb-6">
+        <div className="bg-linear-to-r from-green-600 to-green-800 text-white rounded-lg p-6 mb-6">
           <h1 className="text-3xl font-bold mb-2">Shop Dashboard</h1>
           <p className="text-green-100">Manage your products, orders, and inventory</p>
         </div>
@@ -122,7 +122,7 @@ export default function ShopPage() {
         {lowStockProducts.length > 0 && (
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
             <div className="flex items-start">
-              <svg className="w-6 h-6 text-orange-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-orange-600 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               <div className="flex-1">
