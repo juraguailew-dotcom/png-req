@@ -132,6 +132,8 @@ Key endpoints:
 3. Add environment variables
 4. Deploy
 
+> A repo-based `vercel.json` is included, so Vercel can build this project without committing the local `.vercel` folder.
+
 ### Environment Variables for Production
 ```env
 NEXT_PUBLIC_SUPABASE_URL=

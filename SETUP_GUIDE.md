@@ -234,6 +234,8 @@ See `supabase_schema_complete.sql` for complete schema including:
 3. Add environment variables in Vercel dashboard
 4. Deploy
 
+> A repo-based `vercel.json` is already included for Vercel build configuration. You only need to set the production environment variables in Vercel.
+
 ## 📝 Next Steps
 
 1. Create frontend UI components
