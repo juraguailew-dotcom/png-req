@@ -30,10 +30,20 @@ export async function POST(request) {
       password,
       user_metadata: { full_name },
       app_metadata: { role: assignedRole },
+      // Auto-confirm the new user so they can sign in immediately.
       email_confirm: true,
     });
 
-    if (authError) throw authError;
+    if (authError) {
+      const message = authError.message || '';
+      if (message.toLowerCase().includes('already exists') || message.toLowerCase().includes('duplicate')) {
+        return NextResponse.json({
+          message: 'A user with this email already exists. Please sign in using your credentials.',
+          existingUser: true,
+        }, { status: 409 });
+      }
+      throw authError;
+    }
 
     // Create user profile
     const { error: profileError } = await supabaseAdmin
@@ -64,7 +74,7 @@ export async function POST(request) {
         <h2>Welcome ${full_name}!</h2>
         <p>Your account has been created successfully as a ${assignedRole}.</p>
         <p>You can now log in and start using the platform.</p>
-        ${assignedRole === 'hardware_shop' ? '<p>Note: Your account will need to be verified by an admin before you can receive orders.</p>' : ''}
+        ${assignedRole === 'hardware_shop' ? '<p>Note: Your account will need to be verified by an admin before you can receive requests.</p>' : ''}
       `,
     });
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { formatCurrency } from '../../lib/utils/currency';
+import { formatCurrency } from '../lib/utils/currency';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
@@ -84,7 +84,7 @@ export default function ProductsPage() {
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <h1 className="text-3xl font-bold text-gray-900">Browse Products</h1>
-          <p className="text-gray-600 mt-2">Find and order from hardware suppliers</p>
+          <p className="text-gray-600 mt-2">Find and request from hardware suppliers</p>
         </div>
       </div>
 

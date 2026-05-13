@@ -34,6 +34,8 @@ export default function LoginPage() {
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState("contractor");
   const [loading, setLoading] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [pendingConfirmation, setPendingConfirmation] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
@@ -41,10 +43,19 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setMessage("");
+    setPendingConfirmation(false);
+
     const supabase = createClient();
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      setError(error.message);
+      const messageText = error.message || 'Unable to sign in.';
+      setError(messageText);
+
+      if (/confirm|confirmed|verification/i.test(messageText)) {
+        setPendingConfirmation(true);
+        setMessage('Your email is not confirmed. Confirm the account below to sign in immediately.');
+      }
     } else {
       const userRole = data.user.app_metadata?.role;
       if (userRole === "admin") router.push("/admin");
@@ -52,6 +63,7 @@ export default function LoginPage() {
       else router.push("/");
       router.refresh();
     }
+
     setLoading(false);
   };
 
@@ -66,12 +78,39 @@ export default function LoginPage() {
     });
     const data = await res.json();
     if (!res.ok) {
-      setError(data.error);
+      if (res.status === 409 && data.existingUser) {
+        setMessage(data.message);
+        setMode("login");
+      } else {
+        setError(data.error || 'Unable to create account.');
+      }
     } else {
       setMessage(data.message);
       setMode("login");
     }
     setLoading(false);
+  };
+
+  const handleConfirmPendingUser = async () => {
+    setConfirmLoading(true);
+    setError("");
+    setMessage("");
+
+    const res = await fetch("/api/auth/confirm-pending", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data.error || 'Unable to confirm your account right now.');
+    } else {
+      setPendingConfirmation(false);
+      setMessage(data.message || 'Your account has been confirmed. Please sign in again.');
+    }
+
+    setConfirmLoading(false);
   };
 
   const switchMode = (m) => { setMode(m); setError(""); setMessage(""); };
@@ -100,6 +139,20 @@ export default function LoginPage() {
 
         {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3 mb-4">{error}</div>}
         {message && <div className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg px-4 py-3 mb-4">{message}</div>}
+        {pendingConfirmation && (
+          <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm rounded-lg px-4 py-3 mb-4">
+            <p className="font-semibold">Your email is not confirmed.</p>
+            <p className="mt-1">Click the button below to resend your confirmation email and sign in immediately.</p>
+            <button
+              type="button"
+              onClick={handleConfirmPendingUser}
+              disabled={confirmLoading}
+              className="mt-3 inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-60"
+            >
+              {confirmLoading ? 'Resending...' : 'Resend confirmation email'}
+            </button>
+          </div>
+        )}
 
         {mode === "login" ? (
           <form onSubmit={handleLogin} className="space-y-4">

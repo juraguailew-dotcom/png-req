@@ -10,24 +10,24 @@ export default function ShopPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [analytics, setAnalytics] = useState(null);
-  const [recentOrders, setRecentOrders] = useState([]);
+  const [recentRequests, setRecentRequests] = useState([]);
   const [lowStockProducts, setLowStockProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchDashboardData = async () => {
     try {
-      const [analyticsRes, ordersRes, productsRes] = await Promise.all([
+      const [analyticsRes, requestsRes, productsRes] = await Promise.all([
         fetch('/api/analytics?period=30'),
         fetch('/api/requisitions?limit=5'),
         fetch('/api/products?limit=100'),
       ]);
 
       const analyticsData = await analyticsRes.json();
-      const ordersData = await ordersRes.json();
+      const requestsData = await requestsRes.json();
       const productsData = await productsRes.json();
 
       setAnalytics(analyticsData.analytics);
-      setRecentOrders(ordersData.requisitions || []);
+      setRecentRequests(requestsData.requisitions || []);
       
       // Filter low stock products
       const lowStock = productsData.products?.filter(
@@ -65,13 +65,13 @@ export default function ShopPage() {
 
   const stats = [
     {
-      label: 'Total Orders',
+      label: 'Total Requests',
       value: analytics?.totalOrders || 0,
       icon: '📦',
       color: 'bg-blue-100 text-blue-600',
     },
     {
-      label: 'Pending Orders',
+      label: 'Pending Requests',
       value: analytics?.pendingOrders || 0,
       icon: '⏳',
       color: 'bg-yellow-100 text-yellow-600',
@@ -98,7 +98,7 @@ export default function ShopPage() {
         {/* Welcome Section */}
         <div className="bg-linear-to-r from-green-600 to-green-800 text-white rounded-lg p-6 mb-6">
           <h1 className="text-3xl font-bold mb-2">Shop Dashboard</h1>
-          <p className="text-green-100">Manage your products, orders, and inventory</p>
+          <p className="text-green-100">Manage your products, requests, and inventory</p>
         </div>
 
         {/* Stats Grid */}
@@ -137,7 +137,7 @@ export default function ShopPage() {
         )}
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <a
             href="/shop/products"
             className="bg-blue-600 text-white rounded-lg p-6 hover:bg-blue-700 transition text-center"
@@ -152,8 +152,17 @@ export default function ShopPage() {
             className="bg-green-600 text-white rounded-lg p-6 hover:bg-green-700 transition text-center"
           >
             <div className="text-3xl mb-2">🛒</div>
-            <h3 className="font-semibold">View Orders</h3>
-            <p className="text-sm text-green-100 mt-1">Fulfill customer orders</p>
+            <h3 className="font-semibold">View Requests</h3>
+            <p className="text-sm text-green-100 mt-1">Fulfill customer requests</p>
+          </a>
+
+          <a
+            href="/shop/inventory"
+            className="bg-yellow-600 text-white rounded-lg p-6 hover:bg-yellow-700 transition text-center"
+          >
+            <div className="text-3xl mb-2">📦</div>
+            <h3 className="font-semibold">Inventory</h3>
+            <p className="text-sm text-yellow-100 mt-1">Track stock levels and restock alerts</p>
           </a>
 
           <a
@@ -166,25 +175,25 @@ export default function ShopPage() {
           </a>
         </div>
 
-        {/* Recent Orders */}
+        {/* Recent Requests */}
         <div className="bg-white rounded-lg shadow">
           <div className="p-6 border-b flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-gray-900">Recent Orders</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Recent Requests</h2>
             <a href="/shop/orders" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
               View All →
             </a>
           </div>
 
           <div className="overflow-x-auto">
-            {recentOrders.length === 0 ? (
+            {recentRequests.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
-                <p>No orders yet</p>
+                <p>No requests yet</p>
               </div>
             ) : (
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Request ID</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Items</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
@@ -192,7 +201,7 @@ export default function ShopPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {recentOrders.map((order) => (
+                  {recentRequests.map((order) => (
                     <tr key={order.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 text-sm text-gray-900">#{order.id.slice(0, 8)}</td>
                       <td className="px-6 py-4 text-sm text-gray-600">{order.contractor_name}</td>

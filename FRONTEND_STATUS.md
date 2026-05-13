@@ -38,7 +38,7 @@
 ### Shop Components & Pages
 - [ ] `/shop/page.js` - Shop dashboard
 - [ ] `/shop/products` - Product management (CRUD)
-- [ ] `/shop/orders` - View and fulfill orders
+- [ ] `/shop/orders` - View and fulfill requests
 - [ ] `/shop/inventory` - Inventory tracking
 - [ ] `/shop/analytics` - Sales analytics
 

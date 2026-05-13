@@ -26,18 +26,18 @@ export const emailTemplates = {
   requisitionApproved: (requisitionId, total) => ({
     subject: 'Requisition Approved',
     html: `
-      <h2>Your requisition has been approved</h2>
-      <p>Requisition ID: ${requisitionId}</p>
+      <h2>Your request has been approved</h2>
+      <p>Request ID: ${requisitionId}</p>
       <p>Total Amount: K${total}</p>
-      <p>You can now proceed with the order.</p>
+      <p>You can now proceed with the request.</p>
     `,
   }),
 
   requisitionRejected: (requisitionId, reason) => ({
-    subject: 'Requisition Rejected',
+    subject: 'Request Rejected',
     html: `
-      <h2>Your requisition has been rejected</h2>
-      <p>Requisition ID: ${requisitionId}</p>
+      <h2>Your request has been rejected</h2>
+      <p>Request ID: ${requisitionId}</p>
       <p>Reason: ${reason}</p>
     `,
   }),
