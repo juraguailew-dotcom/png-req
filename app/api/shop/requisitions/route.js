@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin, getCallerUser, logAudit } from '../../../lib/supabase-server';
-import { createNotification } from '../../../lib/utils/notifications';
+import { supabaseAdmin, getCallerUser } from '../../../lib/supabase-server';
 
 export async function GET(request) {
   try {

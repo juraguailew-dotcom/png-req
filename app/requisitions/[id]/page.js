@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase';
 import Header from '@/app/components/shared/Header';
 import { formatCurrency } from '@/app/lib/utils/currency';
@@ -14,22 +14,13 @@ export default function RequisitionDetailPage() {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
-  const router = useRouter();
   const params = useParams();
 
   useEffect(() => {
     const supabase = createClient();
-    const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push('/login');
-        return;
-      }
-      setUser(user);
-      fetchRequisition();
-    };
-    init();
-  }, [router, params.id]);
+    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
+    fetchRequisition();
+  }, [params.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchRequisition = async () => {
     try {

@@ -1,0 +1,20 @@
+# .dockerignore - Files to exclude from Docker build
+.next
+node_modules
+npm-debug.log
+.env.local
+.env.*.local
+.git
+.gitignore
+README.md
+.vscode
+.idea
+coverage
+dist
+build
+*.log
+.DS_Store
+.env.example
+DEPLOYMENT_GUIDE.md
+CONFIGURATION_GUIDE.md
+DEPLOYMENT_CHECKLIST.md

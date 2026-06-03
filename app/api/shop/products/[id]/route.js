@@ -47,7 +47,7 @@ export async function PUT(request, { params }) {
     }
 
     const body = await request.json();
-    const { name, description, category_id, pricing_method, unit_price, unit, stock, low_stock_threshold, active } = body;
+    const { name, description, category_id, pricing_method, unit_price, unit, stock, low_stock_threshold, active, images } = body;
 
     const { data, error } = await supabaseAdmin
       .from('products')
@@ -61,6 +61,7 @@ export async function PUT(request, { params }) {
         ...(stock !== undefined && { stock }),
         ...(low_stock_threshold !== undefined && { low_stock_threshold }),
         ...(active !== undefined && { active }),
+        ...(images !== undefined && { images }),
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)

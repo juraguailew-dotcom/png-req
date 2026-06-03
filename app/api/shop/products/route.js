@@ -28,7 +28,7 @@ export async function GET(request) {
     } else if (status === 'inactive') {
       query = query.eq('active', false);
     } else if (status === 'low_stock') {
-      query = query.lt('stock', query.low_stock_threshold || 10);
+      query = query.gt('stock', 0).lt('stock', 10);
     }
 
     if (search) {

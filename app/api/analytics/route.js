@@ -71,11 +71,15 @@ export async function GET(request) {
         ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
         : 0;
 
-      const { data: lowStockProducts } = await supabaseAdmin
+      // Fetch all products and filter low-stock in JS (supabaseAdmin.raw() is not supported)
+      const { data: allShopProducts } = await supabaseAdmin
         .from('products')
         .select('id, name, stock, low_stock_threshold')
-        .eq('shop_id', user.id)
-        .lte('stock', supabaseAdmin.raw('low_stock_threshold'));
+        .eq('shop_id', user.id);
+
+      const lowStockProducts = allShopProducts?.filter(
+        p => p.stock !== null && p.low_stock_threshold !== null && p.stock <= p.low_stock_threshold
+      ) || [];
 
       analytics = {
         totalOrders: requisitions?.length || 0,

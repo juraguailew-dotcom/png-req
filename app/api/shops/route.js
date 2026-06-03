@@ -12,8 +12,7 @@ export async function GET(request) {
     let query = supabaseAdmin
       .from('users')
       .select('id, email, full_name, business_name, address, city, latitude, longitude, verified, avatar_url')
-      .eq('role', 'hardware_shop')
-      .eq('verified', true);
+      .eq('role', 'hardware_shop');
 
     if (city) {
       query = query.ilike('city', `%${city}%`);

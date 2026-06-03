@@ -9,6 +9,7 @@ export const productSchema = z.object({
   unit: z.string().default('unit'),
   stock: z.number().int().min(0, 'Stock must be non-negative'),
   low_stock_threshold: z.number().int().min(0).default(10),
+  images: z.array(z.string().url()).max(5).optional(),
 });
 
 export const requisitionSchema = z.object({
@@ -21,6 +22,8 @@ export const requisitionSchema = z.object({
   })).min(1, 'At least one item is required'),
   notes: z.string().optional(),
   template_id: z.string().uuid().optional(),
+  assigned_shop_id: z.string().uuid(),
+  assigned_shop_name: z.string().min(1, 'Assigned shop is required'),
 });
 
 export const reviewSchema = z.object({

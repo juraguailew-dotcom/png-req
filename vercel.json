@@ -7,9 +7,9 @@
     }
   ],
   "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "@next_public_supabase_url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@next_public_supabase_anon_key",
-    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
+    "NEXT_PUBLIC_SUPABASE_URL": "https://tkizzdytcgbhrrtpyklg.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRraXp6ZHl0Y2diaHJydHB5a2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyMzAwMTYsImV4cCI6MjA5MjgwNjAxNn0.wF0WTAoDQovC2wkpVWjif301y5x7JmB11n5SCHrXMSI",
+    "SUPABASE_SERVICE_ROLE_KEY": "",
     "RESEND_API_KEY": "@resend_api_key",
     "RESEND_FROM_EMAIL": "@resend_from_email"
   }

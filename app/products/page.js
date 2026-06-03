@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { formatCurrency } from '../../lib/utils/currency';
+import { createClient } from '@/app/lib/supabase';
+import { formatCurrency } from '../lib/utils/currency';
+import Header from '@/app/components/shared/Header';
 
 export default function ProductsPage() {
+  const [user, setUser] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -16,6 +19,16 @@ export default function ProductsPage() {
   const [favorites, setFavorites] = useState(new Set());
 
   useEffect(() => {
+    const supabase = createClient();
+    const init = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+      } catch (err) {
+        console.error('Error fetching user:', err);
+      }
+    };
+    init();
     fetchCategories();
   }, []);
 
@@ -58,21 +71,23 @@ export default function ProductsPage() {
 
   const toggleFavorite = async (productId) => {
     try {
-      if (favorites.has(productId)) {
-        await fetch(`/api/favourites/${productId}`, { method: 'DELETE' });
-        setFavorites(prev => {
-          const next = new Set(prev);
+      // The favourites API uses POST as a toggle (removes if exists, adds if not)
+      const res = await fetch('/api/favourites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: productId }),
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setFavorites(prev => {
+        const next = new Set(prev);
+        if (data.favourited) {
+          next.add(productId);
+        } else {
           next.delete(productId);
-          return next;
-        });
-      } else {
-        await fetch('/api/favourites', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ product_id: productId }),
-        });
-        setFavorites(prev => new Set(prev).add(productId));
-      }
+        }
+        return next;
+      });
     } catch (err) {
       console.error('Error toggling favorite:', err);
     }
@@ -80,49 +95,59 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">Browse Products</h1>
-          <p className="text-gray-600 mt-2">Find and order from hardware suppliers</p>
-        </div>
-      </div>
+      <Header user={user} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Title */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Browse Products</h1>
+          <p className="text-gray-700 mt-2">Find and request from registered hardware suppliers</p>
+        </div>
+
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="border rounded-lg px-4 py-2"
-            />
-            <select
-              value={selectedCategory}
-              onChange={(e) => {
-                setSelectedCategory(e.target.value);
-                setPage(1);
-              }}
-              className="border rounded-lg px-4 py-2"
-            >
-              <option value="">All Categories</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-            <Link
-              href="/favourites"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-center"
-            >
-              My Favourites
-            </Link>
+            <div>
+              <label htmlFor="search" className="block text-sm font-semibold text-gray-900 mb-2">Search</label>
+              <input
+                id="search"
+                type="text"
+                placeholder="Search products..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label htmlFor="category" className="block text-sm font-semibold text-gray-900 mb-2">Category</label>
+              <select
+                id="category"
+                value={selectedCategory}
+                onChange={(e) => {
+                  setSelectedCategory(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="">All Categories</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-end">
+              <Link
+                href="/favourites"
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-center font-medium transition"
+              >
+                ★ My Favourites
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -138,9 +163,21 @@ export default function ProductsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {products.map((product) => (
                 <div key={product.id} className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
-                  {/* Image Placeholder */}
-                  <div className="bg-gray-200 h-48 rounded-t-lg flex items-center justify-center">
-                    <span className="text-gray-400">No Image</span>
+                  <div className="bg-gray-200 h-48 rounded-t-lg overflow-hidden">
+                    {product.images?.[0] ? (
+                      <img
+                        src={product.images[0]}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                      />
+                    ) : null}
+                    <div
+                      className="w-full h-full flex items-center justify-center text-gray-400"
+                      style={{ display: product.images?.[0] ? 'none' : 'flex' }}
+                    >
+                      No image
+                    </div>
                   </div>
 
                   <div className="p-4">
@@ -180,6 +217,14 @@ export default function ProductsPage() {
                       >
                         View
                       </Link>
+                      {user?.app_metadata?.role === 'hardware_shop' && product.shop?.id === user.id && (
+                        <Link
+                          href={`/shop/inventory/${product.id}`}
+                          className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-center"
+                        >
+                          Edit
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </div>

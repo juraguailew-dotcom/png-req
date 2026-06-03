@@ -64,7 +64,7 @@ export async function POST(request) {
 
     const { receiver_id, content, requisition_id, attachments } = await request.json();
 
-    if (!receiver_id || !content?.trim()) {
+    if (!receiver_id || (!content?.trim() && (!attachments || attachments.length === 0))) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -73,7 +73,7 @@ export async function POST(request) {
       .insert({
         sender_id: user.id,
         receiver_id,
-        content: content.trim(),
+        content: content?.trim() || '',
         requisition_id: requisition_id || null,
         attachments: attachments || [],
       })

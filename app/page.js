@@ -2,30 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from './lib/supabase';
-import { useRouter } from 'next/navigation';
 import Header from './components/shared/Header';
 import ContractorDashboard from './components/contractor/Dashboard';
 
 export default function Home() {
-  const router = useRouter();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const supabase = createClient();
-
-    const init = async () => {
+    const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push('/login');
-        return;
-      }
       setUser(user);
       setLoading(false);
     };
-
-    init();
-  }, [router]);
+    checkAuth();
+  }, []);
 
   if (loading) {
     return (

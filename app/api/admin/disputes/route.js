@@ -82,13 +82,13 @@ export async function PUT(request) {
     if (error) throw error;
 
     // Notify the person who raised the dispute
-    await createNotification(
-      data.raised_by,
-      'dispute',
-      `Dispute ${status.charAt(0).toUpperCase() + status.slice(1)}`,
-      `Your dispute has been marked as ${status}`,
-      `/admin/disputes/${dispute_id}`
-    );
+    await createNotification({
+      userId: data.raised_by,
+      type: 'dispute',
+      title: `Dispute ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+      message: `Your dispute has been marked as ${status}`,
+      link: `/disputes/${dispute_id}`,
+    });
 
     await logAudit(user, 'UPDATE', 'dispute', dispute_id, { status, resolution });
 

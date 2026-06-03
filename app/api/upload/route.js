@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin, getCallerUser } from '../../lib/supabase-server';
 
+export async function GET() {
+  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
+}
+
 export async function POST(request) {
   try {
     const user = await getCallerUser();
@@ -10,9 +14,10 @@ export async function POST(request) {
 
     const formData = await request.formData();
     const file = formData.get('file');
-    const bucket = formData.get('bucket') || 'avatars';
+    const bucketValue = formData.get('bucket') || 'avatars';
+    const bucket = String(bucketValue).trim();
 
-    if (!file) {
+    if (!file || typeof file === 'string') {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
@@ -21,35 +26,44 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid bucket' }, { status: 400 });
     }
 
-    // Generate unique filename
-    const fileExt = file.name.split('.').pop();
+    const fileNameBase = typeof file.name === 'string' ? file.name : 'upload.dat';
+    const fileExt = fileNameBase.includes('.') ? fileNameBase.split('.').pop() : 'dat';
     const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-    // Convert file to buffer
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    if (typeof file.arrayBuffer !== 'function') {
+      return NextResponse.json({ error: 'Invalid file upload data' }, { status: 400 });
+    }
 
-    // Upload to Supabase Storage
+    const arrayBuffer = await file.arrayBuffer();
+
     const { data, error } = await supabaseAdmin.storage
       .from(bucket)
-      .upload(fileName, buffer, {
-        contentType: file.type,
+      .upload(fileName, arrayBuffer, {
+        contentType: file.type || 'application/octet-stream',
         upsert: false,
       });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase upload error:', error);
+      return NextResponse.json({ error: error.message || 'Upload failed' }, { status: 500 });
+    }
 
-    // Get public URL
-    const { data: urlData } = supabaseAdmin.storage
+    const { data: urlData, error: urlError } = supabaseAdmin.storage
       .from(bucket)
       .getPublicUrl(fileName);
+
+    if (urlError) {
+      console.error('Supabase public URL error:', urlError);
+      return NextResponse.json({ error: urlError.message || 'Failed to get public URL' }, { status: 500 });
+    }
 
     return NextResponse.json({
       url: urlData.publicUrl,
       path: fileName,
     });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Upload route error:', error);
+    return NextResponse.json({ error: error?.message || 'Server error' }, { status: 500 });
   }
 }
 

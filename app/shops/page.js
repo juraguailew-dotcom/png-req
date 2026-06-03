@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase';
 import Header from '@/app/components/shared/Header';
 
@@ -10,34 +9,27 @@ export default function ShopsPage() {
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cityFilter, setCityFilter] = useState('');
-  const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
-  const router = useRouter();
 
   useEffect(() => {
     const supabase = createClient();
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push('/login');
-        return;
-      }
       setUser(user);
       fetchShops();
     };
     init();
-  }, [router, cityFilter]);
+  }, [cityFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchShops = async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (cityFilter) params.append('city', cityFilter);
-
       const res = await fetch(`/api/shops?${params}`);
       const data = await res.json();
       setShops(data.shops || []);
-    } catch (error) {
-      console.error('Error fetching shops:', error);
+    } catch (_) {
+      // silently handle
     } finally {
       setLoading(false);
     }
@@ -55,55 +47,20 @@ export default function ShopsPage() {
           <p className="text-gray-600 mt-1">Locate verified hardware shops near you</p>
         </div>
 
-        {/* Filters and View Toggle */}
+        {/* Filter */}
         <div className="bg-white rounded-lg shadow p-4 mb-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex-1">
-              <input
-                type="text"
-                placeholder="Filter by city..."
-                value={cityFilter}
-                onChange={(e) => setCityFilter(e.target.value)}
-                className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setViewMode('list')}
-                className={`px-4 py-2 rounded-lg font-medium ${
-                  viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                List View
-              </button>
-              <button
-                onClick={() => setViewMode('map')}
-                className={`px-4 py-2 rounded-lg font-medium ${
-                  viewMode === 'map' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                Map View
-              </button>
-            </div>
-          </div>
+          <input
+            type="text"
+            placeholder="Filter by city..."
+            value={cityFilter}
+            onChange={(e) => setCityFilter(e.target.value)}
+            className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
 
-        {/* Content */}
         {loading ? (
           <div className="bg-white rounded-lg shadow p-8 text-center">
             <div className="text-gray-500">Loading shops...</div>
-          </div>
-        ) : viewMode === 'map' ? (
-          <div className="bg-white rounded-lg shadow p-8">
-            <div className="h-96 bg-gray-100 rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                </svg>
-                <p className="text-gray-600">Map view coming soon!</p>
-                <p className="text-sm text-gray-500 mt-2">Integrate Leaflet for interactive maps</p>
-              </div>
-            </div>
           </div>
         ) : shops.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-8 text-center">
@@ -142,7 +99,6 @@ export default function ShopsPage() {
                         {shop.city}
                       </div>
                     )}
-
                     {shop.distance && (
                       <div className="flex items-center text-sm text-gray-600">
                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,7 +107,6 @@ export default function ShopsPage() {
                         {shop.distance.toFixed(1)} km away
                       </div>
                     )}
-
                     {shop.average_rating && (
                       <div className="flex items-center text-sm">
                         <span className="text-yellow-500 mr-1">⭐</span>

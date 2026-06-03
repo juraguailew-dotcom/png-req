@@ -2,40 +2,37 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '../lib/supabase';
-import { useRouter } from 'next/navigation';
 import Header from '../components/shared/Header';
 import { formatCurrency } from '../lib/utils/currency';
 
 export default function ShopPage() {
-  const router = useRouter();
   const [user, setUser] = useState(null);
   const [analytics, setAnalytics] = useState(null);
-  const [recentOrders, setRecentOrders] = useState([]);
+  const [recentRequests, setRecentRequests] = useState([]);
   const [lowStockProducts, setLowStockProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchDashboardData = async () => {
     try {
-      const [analyticsRes, ordersRes, productsRes] = await Promise.all([
+      const [analyticsRes, requestsRes] = await Promise.all([
         fetch('/api/analytics?period=30'),
         fetch('/api/requisitions?limit=5'),
-        fetch('/api/products?limit=100'),
       ]);
 
       const analyticsData = await analyticsRes.json();
-      const ordersData = await ordersRes.json();
-      const productsData = await productsRes.json();
+      const requestsData = await requestsRes.json();
 
       setAnalytics(analyticsData.analytics);
-      setRecentOrders(ordersData.requisitions || []);
-      
-      // Filter low stock products
-      const lowStock = productsData.products?.filter(
-        p => p.stock <= (p.low_stock_threshold || 10)
-      ) || [];
-      setLowStockProducts(lowStock);
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      setRecentRequests(requestsData.requisitions || []);
+
+      // Low stock count comes from analytics; fetch details only if needed
+      if (analyticsData.analytics?.lowStockProducts > 0) {
+        const inventoryRes = await fetch('/api/shop/inventory?status=low_stock&limit=100');
+        const inventoryData = await inventoryRes.json();
+        setLowStockProducts(inventoryData.products || []);
+      }
+    } catch (_) {
+      // silently handle
     } finally {
       setLoading(false);
     }
@@ -45,15 +42,11 @@ export default function ShopPage() {
     const supabase = createClient();
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user || user.app_metadata?.role !== 'hardware_shop') {
-        router.push('/login');
-        return;
-      }
       setUser(user);
       fetchDashboardData();
     };
     init();
-  }, [router]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!user || loading) {
     return (
@@ -65,28 +58,16 @@ export default function ShopPage() {
 
   const stats = [
     {
-      label: 'Total Orders',
+      label: 'Total Requests',
       value: analytics?.totalOrders || 0,
       icon: '📦',
       color: 'bg-blue-100 text-blue-600',
     },
     {
-      label: 'Pending Orders',
+      label: 'Pending Requests',
       value: analytics?.pendingOrders || 0,
       icon: '⏳',
       color: 'bg-yellow-100 text-yellow-600',
-    },
-    {
-      label: 'Total Revenue',
-      value: formatCurrency(analytics?.totalRevenue || 0),
-      icon: '💰',
-      color: 'bg-green-100 text-green-600',
-    },
-    {
-      label: 'Average Rating',
-      value: analytics?.averageRating || '0.0',
-      icon: '⭐',
-      color: 'bg-purple-100 text-purple-600',
     },
   ];
 
@@ -98,11 +79,11 @@ export default function ShopPage() {
         {/* Welcome Section */}
         <div className="bg-linear-to-r from-green-600 to-green-800 text-white rounded-lg p-6 mb-6">
           <h1 className="text-3xl font-bold mb-2">Shop Dashboard</h1>
-          <p className="text-green-100">Manage your products, orders, and inventory</p>
+          <p className="text-green-100">Manage your products, requests, and inventory</p>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {stats.map((stat, index) => (
             <div key={index} className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center justify-between">
@@ -137,7 +118,7 @@ export default function ShopPage() {
         )}
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <a
             href="/shop/products"
             className="bg-blue-600 text-white rounded-lg p-6 hover:bg-blue-700 transition text-center"
@@ -148,43 +129,45 @@ export default function ShopPage() {
           </a>
 
           <a
-            href="/shop/orders"
+            href="/shop/requisitions"
             className="bg-green-600 text-white rounded-lg p-6 hover:bg-green-700 transition text-center"
           >
-            <div className="text-3xl mb-2">🛒</div>
-            <h3 className="font-semibold">View Orders</h3>
-            <p className="text-sm text-green-100 mt-1">Fulfill customer orders</p>
+            <div className="text-3xl mb-2">📋</div>
+            <h3 className="font-semibold">Requisitions</h3>
+            <p className="text-sm text-green-100 mt-1">View requests &amp; send quotations</p>
           </a>
 
           <a
-            href="/shop/analytics"
-            className="bg-purple-600 text-white rounded-lg p-6 hover:bg-purple-700 transition text-center"
+            href="/shop/inventory"
+            className="bg-yellow-600 text-white rounded-lg p-6 hover:bg-yellow-700 transition text-center"
           >
-            <div className="text-3xl mb-2">📊</div>
-            <h3 className="font-semibold">Analytics</h3>
-            <p className="text-sm text-purple-100 mt-1">View sales and performance</p>
+            <div className="text-3xl mb-2">📦</div>
+            <h3 className="font-semibold">Inventory</h3>
+            <p className="text-sm text-yellow-100 mt-1">Track stock levels and restock alerts</p>
           </a>
+
+
         </div>
 
-        {/* Recent Orders */}
+        {/* Recent Requests */}
         <div className="bg-white rounded-lg shadow">
           <div className="p-6 border-b flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-gray-900">Recent Orders</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Recent Requests</h2>
             <a href="/shop/orders" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
               View All →
             </a>
           </div>
 
           <div className="overflow-x-auto">
-            {recentOrders.length === 0 ? (
+            {recentRequests.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
-                <p>No orders yet</p>
+                <p>No requests yet</p>
               </div>
             ) : (
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Request ID</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Items</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
@@ -192,7 +175,7 @@ export default function ShopPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {recentOrders.map((order) => (
+                  {recentRequests.map((order) => (
                     <tr key={order.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 text-sm text-gray-900">#{order.id.slice(0, 8)}</td>
                       <td className="px-6 py-4 text-sm text-gray-600">{order.contractor_name}</td>

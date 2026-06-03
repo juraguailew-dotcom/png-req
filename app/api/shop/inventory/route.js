@@ -31,7 +31,7 @@ export async function GET(request) {
     if (error) throw error;
 
     return NextResponse.json({
-      inventory: data,
+      products: data,
       pagination: {
         page,
         limit,

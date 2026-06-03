@@ -19,6 +19,7 @@ export async function PATCH(request, { params }) {
     const updates = {
       status,
       admin_notes,
+      updated_at: new Date().toISOString(),
     };
 
     if (status === 'resolved' || status === 'dismissed') {

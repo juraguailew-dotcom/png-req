@@ -82,13 +82,13 @@ export async function PUT(request, { params }) {
     if (error) throw error;
 
     // Notify contractor
-    await createNotification(
-      requisition.contractor_id,
-      'requisition',
-      `Order ${status === 'fulfilled' ? 'Fulfilled' : status.charAt(0).toUpperCase() + status.slice(1)}`,
-      `Your requisition has been ${status}`,
-      `/requisitions/${id}`
-    );
+    await createNotification({
+      userId: requisition.contractor_id,
+      type: 'requisition',
+      title: `Order ${status === 'fulfilled' ? 'Fulfilled' : status.charAt(0).toUpperCase() + status.slice(1)}`,
+      message: `Your requisition has been ${status}`,
+      link: `/requisitions/${id}`,
+    });
 
     await logAudit(user, 'UPDATE', 'requisition', id, { status });
 

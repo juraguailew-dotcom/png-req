@@ -59,8 +59,15 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const user = await getCallerUser();
-    if (!user || user.app_metadata?.role !== 'contractor') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Only contractors can create requisitions
+    if (user.app_metadata?.role !== 'contractor') {
+      return NextResponse.json({ 
+        error: 'Only contractors are allowed to create requisitions. Hardware shops can fulfill requisitions assigned to them.' 
+      }, { status: 403 });
     }
 
     const body = await request.json();
@@ -68,6 +75,7 @@ export async function POST(request) {
 
     // Calculate total
     const total = validated.items.reduce((sum, item) => sum + item.total, 0);
+    const requiresApproval = total > 5000;
 
     // Get contractor name
     const { data: userData } = await supabaseAdmin
@@ -83,8 +91,11 @@ export async function POST(request) {
         contractor_name: userData?.full_name || user.email,
         items: validated.items,
         total_amount: total,
+        requires_approval: requiresApproval,
         notes: validated.notes,
         template_id: validated.template_id,
+        assigned_shop_id: validated.assigned_shop_id,
+        assigned_shop_name: validated.assigned_shop_name,
       })
       .select()
       .single();

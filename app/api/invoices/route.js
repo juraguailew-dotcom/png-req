@@ -6,7 +6,7 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const role = user.app_metadata?.role;
 
-  let query = supabaseAdmin.from('invoices').select('*, requisition:requisition_id(item_name, quantity)').order('created_at', { ascending: false });
+  let query = supabaseAdmin.from('invoices').select('*, requisition:requisition_id(id, contractor_name, total_amount, status)').order('created_at', { ascending: false });
   if (role === 'hardware_shop') query = query.eq('shop_id', user.id);
   else if (role === 'contractor') query = query.eq('contractor_id', user.id);
   // admin sees all
@@ -25,16 +25,20 @@ export async function POST(request) {
   if (!requisition_id || !contractor_id || !items?.length) {
     return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 });
   }
+  const subtotal = items.reduce((sum, item) => sum + ((item.total ?? item.unit_price * item.quantity) || 0), 0);
   const { data, error } = await supabaseAdmin.from('invoices').insert({
-    requisition_id, shop_id: user.id, contractor_id, items, total: total || 0, notes,
+    requisition_id, shop_id: user.id, contractor_id, items, subtotal: subtotal || 0, total: total || subtotal || 0, notes,
   }).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   await logAudit(user, 'CREATE', 'invoice', data.id, { requisition_id, total });
   // Notify contractor
   await supabaseAdmin.from('notifications').insert({
     user_id: contractor_id,
+    type: 'requisition',
+    title: 'New Invoice Issued',
     message: `A new invoice of K${total || 0} has been issued for your requisition.`,
-    requisition_id,
+    link: `/invoices`,
+    metadata: { requisition_id },
   });
   return NextResponse.json({ invoice: data });
 }

@@ -1,27 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase';
 import Header from '@/app/components/shared/Header';
 import CreateRequisition from '@/app/components/contractor/CreateRequisition';
 
 export default function NewRequisitionPage() {
   const [user, setUser] = useState(null);
-  const router = useRouter();
 
   useEffect(() => {
     const supabase = createClient();
-    const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push('/login');
-        return;
-      }
-      setUser(user);
-    };
-    init();
-  }, [router]);
+    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
+  }, []);
 
   if (!user) return null;
 

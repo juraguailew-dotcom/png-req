@@ -1,14 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createClient } from '@/app/lib/supabase';
 import { formatCurrency } from '@/app/lib/utils/currency';
 
 export default function ContractorDashboard() {
+  const [user, setUser] = useState(null);
   const [analytics, setAnalytics] = useState(null);
   const [recentRequisitions, setRecentRequisitions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const supabase = createClient();
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
     fetchDashboardData();
   }, []);
 
@@ -58,12 +66,6 @@ export default function ContractorDashboard() {
       icon: '✅',
       color: 'bg-green-100 text-green-600',
     },
-    {
-      label: 'Total Spent',
-      value: formatCurrency(analytics?.totalSpent || 0),
-      icon: '💰',
-      color: 'bg-purple-100 text-purple-600',
-    },
   ];
 
   const getStatusColor = (status) => {
@@ -80,7 +82,7 @@ export default function ContractorDashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg p-6">
+      <div className="bg-linear-to-r from-blue-600 to-blue-800 text-white rounded-lg p-6">
         <h1 className="text-3xl font-bold mb-2">Welcome Back!</h1>
         <p className="text-blue-100">Manage your requisitions and track your spending</p>
       </div>
@@ -91,8 +93,8 @@ export default function ContractorDashboard() {
           <div key={index} className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                <p className="text-sm text-black mb-1">{stat.label}</p>
+                <p className="text-2xl font-bold text-black">{stat.value}</p>
               </div>
               <div className={`text-3xl ${stat.color} w-12 h-12 rounded-lg flex items-center justify-center`}>
                 {stat.icon}
@@ -109,7 +111,7 @@ export default function ContractorDashboard() {
           className="bg-blue-600 text-white rounded-lg p-6 hover:bg-blue-700 transition text-center"
         >
           <div className="text-3xl mb-2">➕</div>
-          <h3 className="font-semibold">Create Requisition</h3>
+          <h3 className="font-semibold">Create New Request</h3>
           <p className="text-sm text-blue-100 mt-1">Start a new purchase request</p>
         </a>
 
@@ -122,14 +124,6 @@ export default function ContractorDashboard() {
           <p className="text-sm text-green-100 mt-1">Find what you need</p>
         </a>
 
-        <a
-          href="/shops"
-          className="bg-purple-600 text-white rounded-lg p-6 hover:bg-purple-700 transition text-center"
-        >
-          <div className="text-3xl mb-2">🏪</div>
-          <h3 className="font-semibold">Find Shops</h3>
-          <p className="text-sm text-purple-100 mt-1">Locate nearby hardware shops</p>
-        </a>
       </div>
 
       {/* Recent Requisitions */}
@@ -145,9 +139,11 @@ export default function ContractorDashboard() {
           {recentRequisitions.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               <p>No requisitions yet</p>
-              <a href="/requisitions/new" className="text-blue-600 hover:text-blue-800 mt-2 inline-block">
-                Create your first requisition
-              </a>
+              {user?.app_metadata?.role === 'contractor' && (
+                <a href="/requisitions/new" className="text-blue-600 hover:text-blue-800 mt-2 inline-block">
+                  Create your first request
+                </a>
+              )}
             </div>
           ) : (
             <table className="w-full">

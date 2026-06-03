@@ -4,8 +4,14 @@ export const currency = {
   name: 'Papua New Guinea Kina',
 };
 
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 export function formatCurrency(amount) {
-  return `${currency.symbol}${Number(amount).toFixed(2)}`;
+  const value = Number(amount) || 0;
+  return `${currency.symbol}${currencyFormatter.format(value)}`;
 }
 
 export function parseCurrency(value) {

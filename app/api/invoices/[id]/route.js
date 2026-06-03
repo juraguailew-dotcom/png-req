@@ -6,8 +6,8 @@ export async function PATCH(request, { params }) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   const { status } = await request.json();
-  const allowed = ['Paid', 'Cancelled'];
-  if (!allowed.includes(status)) return NextResponse.json({ error: 'Invalid status.' }, { status: 400 });
+  const allowed = ['paid', 'cancelled'];
+  if (!allowed.includes(status)) return NextResponse.json({ error: 'Invalid status. Must be "paid" or "cancelled".' }, { status: 400 });
 
   // Contractor can mark Paid, shop can mark Cancelled
   const role = user.app_metadata?.role;

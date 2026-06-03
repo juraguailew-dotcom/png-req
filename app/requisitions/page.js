@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase';
 import Header from '@/app/components/shared/Header';
 import Pagination from '@/app/components/shared/Pagination';
@@ -14,21 +13,19 @@ export default function RequisitionsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState(null);
-  const router = useRouter();
 
   useEffect(() => {
     const supabase = createClient();
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push('/login');
-        return;
-      }
       setUser(user);
-      fetchRequisitions();
     };
     init();
-  }, [router, statusFilter, currentPage]);
+  }, []);
+
+  useEffect(() => {
+    if (user !== null) fetchRequisitions();
+  }, [user, statusFilter, currentPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchRequisitions = async () => {
     setLoading(true);
@@ -73,15 +70,28 @@ export default function RequisitionsPage() {
             <h1 className="text-3xl font-bold text-gray-900">My Requisitions</h1>
             <p className="text-gray-600 mt-1">Track and manage your purchase requests</p>
           </div>
-          <a
-            href="/requisitions/new"
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium flex items-center"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            New Requisition
-          </a>
+          {user.app_metadata?.role === 'contractor' && (
+            <div className="flex items-center gap-3">
+              <a
+                href="/requisitions/quoted"
+                className="bg-purple-600 text-white px-5 py-3 rounded-lg hover:bg-purple-700 font-medium flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Quoted Requests
+              </a>
+              <a
+                href="/requisitions/new"
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium flex items-center"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Create New Request
+              </a>
+            </div>
+          )}
         </div>
 
         {/* Filters */}
@@ -95,7 +105,7 @@ export default function RequisitionsPage() {
             >
               All
             </button>
-            {['pending', 'approved', 'fulfilled', 'rejected', 'cancelled'].map((status) => (
+            {['pending', 'approved', 'quoted', 'fulfilled', 'rejected', 'cancelled'].map((status) => (
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
@@ -120,13 +130,19 @@ export default function RequisitionsPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No requisitions found</h3>
-            <p className="text-gray-600 mb-4">Start by creating your first requisition</p>
-            <a
-              href="/requisitions/new"
-              className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium"
-            >
-              Create Requisition
-            </a>
+            <p className="text-gray-600 mb-4">
+              {user?.app_metadata?.role === 'contractor' 
+                ? 'Start by creating your first requisition' 
+                : 'Requisitions will appear once they are assigned to you'}
+            </p>
+            {user?.app_metadata?.role === 'contractor' && (
+              <a
+                href="/requisitions/new"
+                className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium"
+              >
+                Create New Request
+              </a>
+            )}
           </div>
         ) : (
           <>
