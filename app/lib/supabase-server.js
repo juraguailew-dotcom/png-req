@@ -2,6 +2,15 @@ import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
+/**
+ * Get user role from either app_metadata (admin-set) or user_metadata (signUp-set).
+ * app_metadata is more secure but requires the admin client to set.
+ * user_metadata is set during signUp and readable on all clients.
+ */
+export function getUserRole(user) {
+  return user?.app_metadata?.role || user?.user_metadata?.role || null;
+}
+
 
 
 /**
@@ -22,7 +31,10 @@ export const supabaseAdmin = createClient(
 );
 
 /**
- * Get the current authenticated user from cookies
+ * Get the current authenticated user from cookies.
+ * Normalises the role into user.app_metadata.role by reading from
+ * both app_metadata (admin-set) and user_metadata (signUp-set),
+ * so all API route role checks work regardless of how the user was created.
  */
 export async function getCallerUser() {
   try {
@@ -30,25 +42,34 @@ export async function getCallerUser() {
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      { 
-        cookies: { 
+      {
+        cookies: {
           getAll: () => cookieStore.getAll(),
           setAll: (cookiesToSet) => {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             );
           },
-        } 
+        },
       }
     );
     const { data: { user }, error } = await supabase.auth.getUser();
-    
-    if (error) {
-      return null;
+
+    if (error || !user) return null;
+
+    // Normalise role: app_metadata wins (set by admin), falls back to user_metadata (set by signUp)
+    const role =
+      user.app_metadata?.role ||
+      user.user_metadata?.role ||
+      null;
+
+    // Patch the user object so all existing role checks work unchanged
+    if (role && !user.app_metadata?.role) {
+      user.app_metadata = { ...(user.app_metadata || {}), role };
     }
-    
+
     return user;
-  } catch (error) {
+  } catch (_) {
     return null;
   }
 }

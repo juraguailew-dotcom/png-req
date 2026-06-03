@@ -49,7 +49,11 @@ export default function LoginPage() {
         setError(msg || "Unable to sign in. Please try again.");
       }
     } else {
-      const userRole = data.user.app_metadata?.role;
+      // Read role from app_metadata first, fall back to user_metadata
+      const userRole =
+        data.user.app_metadata?.role ||
+        data.user.user_metadata?.role ||
+        "contractor";
       if (userRole === "admin") router.push("/admin");
       else if (userRole === "hardware_shop") router.push("/shop");
       else router.push("/");

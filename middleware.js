@@ -1,14 +1,16 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 
-// Paths that don't require authentication
 const PUBLIC_PATHS = ['/login', '/register'];
 
-// Role-based path restrictions
-const ROLE_PATHS = {
-  admin: ['/admin'],
-  hardware_shop: ['/shop'],
-};
+/**
+ * Get user role from either app_metadata (admin-created users)
+ * or user_metadata (signUp-created users).
+ * app_metadata takes priority as it's more secure (can't be changed by user).
+ */
+function getUserRole(user) {
+  return user?.app_metadata?.role || user?.user_metadata?.role || 'contractor';
+}
 
 export async function middleware(request) {
   let supabaseResponse = NextResponse.next({ request });
@@ -18,7 +20,9 @@ export async function middleware(request) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
-        getAll() { return request.cookies.getAll(); },
+        getAll() {
+          return request.cookies.getAll();
+        },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({ request });
@@ -30,42 +34,38 @@ export async function middleware(request) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const { pathname } = request.nextUrl;
+  const isPublicPath = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
 
-  // Check if path is public
-  const isPublicPath = PUBLIC_PATHS.some(path => pathname.startsWith(path));
-
-  // Redirect unauthenticated users to login
+  // Unauthenticated → redirect to login
   if (!user && !isPublicPath) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Redirect authenticated users away from login (but not if they're being redirected TO login)
+  // Authenticated on login page → redirect to their dashboard
   if (user && isPublicPath && !request.nextUrl.searchParams.has('redirect')) {
-    const role = user.app_metadata?.role;
+    const role = getUserRole(user);
     if (role === 'admin') return NextResponse.redirect(new URL('/admin', request.url));
     if (role === 'hardware_shop') return NextResponse.redirect(new URL('/shop', request.url));
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // Enforce role-based access control
+  // Role-based access control
   if (user) {
-    const role = user.app_metadata?.role;
-    
-    // Check admin access
+    const role = getUserRole(user);
+
     if (pathname.startsWith('/admin') && role !== 'admin') {
       return NextResponse.redirect(new URL('/', request.url));
     }
-    
-    // Check shop access
     if (pathname.startsWith('/shop') && role !== 'hardware_shop') {
       return NextResponse.redirect(new URL('/', request.url));
     }
-    
-    // Redirect shop owners from contractor dashboard
     if (role === 'hardware_shop' && pathname === '/') {
       return NextResponse.redirect(new URL('/shop', request.url));
     }
@@ -75,15 +75,5 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
-  ],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|public).*)'],
 };
