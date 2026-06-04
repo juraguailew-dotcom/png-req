@@ -21,7 +21,7 @@ async function downloadQuotationPDF(req) {
   doc.setFontSize(16); doc.setFont('helvetica', 'bold');
   doc.text('QUOTATION', pageW / 2, 12, { align: 'center' });
   doc.setFontSize(8); doc.setFont('helvetica', 'normal');
-  doc.text('Papua New Guinea Requisition System', pageW / 2, 19, { align: 'center' });
+  doc.text('Material Requisition System', pageW / 2, 19, { align: 'center' });
   doc.text(`Ref #: ${req.id.slice(0, 8).toUpperCase()}`, pageW / 2, 24, { align: 'center' });
   doc.setTextColor(0);
 
@@ -136,7 +136,7 @@ async function downloadQuotationPDF(req) {
 
   // ── Footer ────────────────────────────────────────────────────────────────────
   doc.setFontSize(7); doc.setTextColor(150);
-  doc.text('PNG Requisition System — ' + new Date().toISOString(), pageW / 2, 290, { align: 'center' });
+  doc.text('Material Requisition System — ' + new Date().toISOString(), pageW / 2, 290, { align: 'center' });
 
   doc.save(`quotation-${req.id.slice(0, 8)}.pdf`);
 }

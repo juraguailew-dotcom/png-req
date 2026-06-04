@@ -10,7 +10,7 @@ const interSans = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "PNG Requisition System",
+  title: "Material Requisition System",
   description: "Contractor Portal | Digital Field Requests",
 };
 

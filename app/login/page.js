@@ -19,7 +19,7 @@ const translations = {
   passwordMinPlaceholder: "Min. 6 characters",
   contractor: "Contractor",
   hardwareShop: "Hardware Shop",
-  appTitle: "PNG Requisition System",
+  appTitle: "Material Requisition System",
   appSubtitle: "Electrical Contractor Portal | Digital Field Requests",
 };
 

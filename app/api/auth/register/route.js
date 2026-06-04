@@ -74,7 +74,7 @@ export async function POST(request) {
     try {
       await sendEmail({
         to: email,
-        subject: 'Welcome to PNG Requisition System',
+        subject: 'Welcome to Material Requisition System',
         html: `
           <h2>Welcome ${full_name}!</h2>
           <p>Your account has been created successfully as a ${assignedRole === 'hardware_shop' ? 'Hardware Shop' : 'Contractor'}.</p>

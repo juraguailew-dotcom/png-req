@@ -43,7 +43,7 @@ export default function NotFound() {
             We couldn't find what you're looking for
           </h1>
           <p className="text-slate-600 text-lg mb-8 max-w-md mx-auto">
-            The page you're trying to access doesn't exist or has been moved. Let's get you back on track with the PNG Requisition System.
+            The page you're trying to access doesn't exist or has been moved. Let's get you back on track with the Material Requisition System.
           </p>
 
           {/* Action Buttons */}
@@ -114,7 +114,7 @@ export default function NotFound() {
 
         {/* Decorative Elements */}
         <div className="mt-8 text-center text-sm text-slate-400">
-          <p>PNG Requisition System © 2026</p>
+          <p>Material Requisition System © 2026</p>
         </div>
       </div>
     </div>

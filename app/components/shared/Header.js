@@ -79,10 +79,10 @@ export default function Header({ user }) {
           <div className="flex items-center gap-8">
             <Link href={role === 'admin' ? '/admin' : role === 'hardware_shop' ? '/shop' : '/'} className="flex items-center gap-2 hover:opacity-80 transition">
               <div className="w-8 h-8 bg-linear-to-br from-orange-500 to-orange-700 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                PN
+                MR
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-gray-900">PNG</span>
+                <span className="text-sm font-bold text-gray-900">Material</span>
                 <span className="text-xs text-gray-600 -mt-1">Requisition</span>
               </div>
             </Link>

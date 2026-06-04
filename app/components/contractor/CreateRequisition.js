@@ -81,7 +81,7 @@ async function downloadPDF({ selected, shop, notes, total, requiresApproval, req
   });
 
   doc.setFontSize(7); doc.setTextColor(150);
-  doc.text('PNG Requisition System — generated ' + new Date().toISOString(), pageW / 2, 290, { align: 'center' });
+  doc.text('Material Requisition System — generated ' + new Date().toISOString(), pageW / 2, 290, { align: 'center' });
   doc.save(`requisition-${requisitionId ? requisitionId.slice(0, 8) : 'draft'}.pdf`);
 }
 
