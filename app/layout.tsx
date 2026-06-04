@@ -11,7 +11,7 @@ const interSans = Inter({
 
 export const metadata: Metadata = {
   title: "Material Requisition System",
-  description: "Contractor Portal | Digital Field Requests",
+  description: "Digital procurement platform for contractors and hardware suppliers in Papua New Guinea.",
 };
 
 export default function RootLayout({
