@@ -5,7 +5,10 @@ import { cookies } from 'next/headers';
 
 
 /**
- * Admin Supabase client with service role for privileged operations
+ * Admin Supabase client with service role for privileged operations.
+ * Requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY env vars.
+ * The service role key is a long JWT starting with "eyJ" — get it from
+ * Supabase Dashboard → Project Settings → API → service_role key.
  */
 export const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
