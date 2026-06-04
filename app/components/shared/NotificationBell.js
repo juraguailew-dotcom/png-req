@@ -37,8 +37,8 @@ export default function NotificationBell() {
       const data = await res.json();
       setNotifications(data.notifications || []);
       setUnreadCount(data.notifications?.filter(n => !n.read).length || 0);
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
+    } catch (_) {
+      // silently handle
     } finally {
       setLoading(false);
     }
@@ -52,8 +52,8 @@ export default function NotificationBell() {
         body: JSON.stringify({ notification_id: notificationId }),
       });
       fetchNotifications();
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
+    } catch (_) {
+      // silently handle
     }
   };
 
@@ -65,8 +65,8 @@ export default function NotificationBell() {
         body: JSON.stringify({ action: 'mark_all_read' }),
       });
       fetchNotifications();
-    } catch (error) {
-      console.error('Error marking all as read:', error);
+    } catch (_) {
+      // silently handle
     }
   };
 

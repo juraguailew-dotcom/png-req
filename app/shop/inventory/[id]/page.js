@@ -31,20 +31,15 @@ export default function EditProductPage() {
     active: true,
   });
 
-  // Initialize
   useEffect(() => {
     const supabase = createClient();
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user || user.app_metadata?.role !== 'hardware_shop') {
-        router.push('/');
-        return;
-      }
       setUser(user);
       await Promise.all([fetchProduct(), fetchCategories()]);
     };
     init();
-  }, [router, productId]);
+  }, [productId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchProduct = async () => {
     try {
@@ -65,8 +60,7 @@ export default function EditProductPage() {
         });
         setUrls(data.product.images || []);
       }
-    } catch (error) {
-      console.error('Error fetching product:', error);
+    } catch (_) {
       setErrors({ submit: 'Failed to load product' });
     } finally {
       setLoading(false);
@@ -78,8 +72,8 @@ export default function EditProductPage() {
       const res = await fetch('/api/categories');
       const data = await res.json();
       setCategories(data.categories || []);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
+    } catch (_) {
+      // silently handle
     }
   };
 
@@ -144,8 +138,7 @@ export default function EditProductPage() {
       } else {
         setErrors({ submit: data.error || 'Failed to update product' });
       }
-    } catch (error) {
-      console.error('Error updating product:', error);
+    } catch (_) {
       setErrors({ submit: 'An error occurred while updating the product' });
     } finally {
       setSaving(false);

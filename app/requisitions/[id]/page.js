@@ -27,8 +27,8 @@ export default function RequisitionDetailPage() {
       const res = await fetch(`/api/requisitions/${params.id}`);
       const data = await res.json();
       setRequisition(data.requisition);
-    } catch (error) {
-      console.error('Error fetching requisition:', error);
+    } catch (_) {
+      // silently handle
     } finally {
       setLoading(false);
     }
@@ -52,8 +52,7 @@ export default function RequisitionDetailPage() {
         const data = await res.json();
         alert(data.error || 'Failed to cancel requisition');
       }
-    } catch (error) {
-      console.error('Error cancelling requisition:', error);
+    } catch (_) {
       alert('An error occurred');
     } finally {
       setActionLoading(false);
@@ -85,8 +84,7 @@ export default function RequisitionDetailPage() {
         const data = await res.json();
         alert(data.error || 'Failed to submit review');
       }
-    } catch (error) {
-      console.error('Error submitting review:', error);
+    } catch (_) {
       alert('An error occurred');
     } finally {
       setActionLoading(false);

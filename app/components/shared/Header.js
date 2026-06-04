@@ -36,11 +36,11 @@ export default function Header({ user }) {
     } else if (role === 'hardware_shop') {
       return [
         { href: '/shop', label: 'Dashboard' },
-        { href: '/shop/products', label: 'Products' },
         { href: '/shop/requisitions', label: 'Requisitions' },
         { href: '/shop/orders', label: 'Orders' },
         { href: '/shop/inventory', label: 'Inventory' },
-        { href: '/messages', label: 'Messages' },
+        { href: '/shop/products', label: 'Products' },
+        { href: '/shop/analytics', label: 'Analytics' },
       ];
     } else {
       return [

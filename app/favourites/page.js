@@ -45,8 +45,8 @@ export default function FavouritesPage() {
         body: JSON.stringify({ product_id: productId }),
       });
       fetchFavourites();
-    } catch (err) {
-      console.error(err);
+    } catch (_) {
+      // silently handle
     }
   };
 

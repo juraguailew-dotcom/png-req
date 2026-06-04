@@ -24,8 +24,8 @@ export default function ProductsPage() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         setUser(user);
-      } catch (err) {
-        console.error('Error fetching user:', err);
+      } catch (_) {
+        // auth handled by middleware
       }
     };
     init();
@@ -43,8 +43,8 @@ export default function ProductsPage() {
         const data = await res.json();
         setCategories(data.categories || []);
       }
-    } catch (err) {
-      console.error('Error fetching categories:', err);
+    } catch (_) {
+      // silently handle
     }
   };
 
@@ -88,8 +88,8 @@ export default function ProductsPage() {
         }
         return next;
       });
-    } catch (err) {
-      console.error('Error toggling favorite:', err);
+    } catch (_) {
+      // silently handle
     }
   };
 

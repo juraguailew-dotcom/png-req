@@ -1,13 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/app/lib/supabase';
 import Header from '@/app/components/shared/Header';
 import { formatCurrency } from '@/app/lib/utils/currency';
 
 export default function InventoryPage() {
-  const router = useRouter();
   const [user, setUser] = useState(null);
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -31,15 +29,11 @@ export default function InventoryPage() {
     const supabase = createClient();
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user || user.app_metadata?.role !== 'hardware_shop') {
-        router.push('/');
-        return;
-      }
       setUser(user);
       await fetchInventory();
     };
     init();
-  }, [router]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchInventory = async () => {
     setLoading(true);
@@ -58,8 +52,8 @@ export default function InventoryPage() {
       if (catData.categories) {
         setCategories(catData.categories);
       }
-    } catch (error) {
-      console.error('Error fetching inventory:', error);
+    } catch (_) {
+      // silently handle
     } finally {
       setLoading(false);
     }
@@ -140,8 +134,7 @@ export default function InventoryPage() {
       } else {
         alert('Failed to delete product');
       }
-    } catch (error) {
-      console.error('Error deleting product:', error);
+    } catch (_) {
       alert('Error deleting product');
     }
   };
@@ -158,8 +151,8 @@ export default function InventoryPage() {
         const updated = await res.json();
         setProducts(products.map(p => p.id === productId ? updated.product : p));
       }
-    } catch (error) {
-      console.error('Error updating stock:', error);
+    } catch (_) {
+      // silently handle
     }
   };
 

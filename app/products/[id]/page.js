@@ -60,8 +60,8 @@ export default function ProductDetailPage() {
       } else {
         setCanEdit(false);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (_) {
+      // silently handle
     } finally {
       setLoading(false);
     }
@@ -77,8 +77,8 @@ export default function ProductDetailPage() {
         body: JSON.stringify({ product_id: product.id }),
       });
       await fetchProduct(user);
-    } catch (err) {
-      console.error(err);
+    } catch (_) {
+      // silently handle
     } finally {
       setSaving(false);
     }

@@ -1,16 +1,8 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
-  "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": "https://tkizzdytcgbhrrtpyklg.supabase.co",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRraXp6ZHl0Y2diaHJydHB5a2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyMzAwMTYsImV4cCI6MjA5MjgwNjAxNn0.wF0WTAoDQovC2wkpVWjif301y5x7JmB11n5SCHrXMSI",
-    "SUPABASE_SERVICE_ROLE_KEY": "",
-    "RESEND_API_KEY": "@resend_api_key",
-    "RESEND_FROM_EMAIL": "@resend_from_email"
-  }
+  "buildCommand": "next build",
+  "devCommand": "next dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["syd1"]
 }

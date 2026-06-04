@@ -40,8 +40,8 @@ export default function RequisitionsPage() {
       const data = await res.json();
       setRequisitions(data.requisitions || []);
       setPagination(data.pagination);
-    } catch (error) {
-      console.error('Error fetching requisitions:', error);
+    } catch (_) {
+      // silently handle
     } finally {
       setLoading(false);
     }

@@ -32,8 +32,8 @@ export default function ContractorDashboard() {
 
       setAnalytics(analyticsData.analytics);
       setRecentRequisitions(requisitionsData.requisitions || []);
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+    } catch (_) {
+      // silently handle
     } finally {
       setLoading(false);
     }

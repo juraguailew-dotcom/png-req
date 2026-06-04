@@ -36,7 +36,6 @@ export async function createNotification({ userId, type, title, message, link, m
 
     return { success: true, data };
   } catch (error) {
-    console.error('Create notification error:', error);
     return { success: false, error: error.message };
   }
 }

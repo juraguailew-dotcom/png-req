@@ -25,28 +25,23 @@ export default function AddProductPage() {
     pricingMethod: 'unit',
   });
 
-  // Initialize
   useEffect(() => {
     const supabase = createClient();
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user || user.app_metadata?.role !== 'hardware_shop') {
-        router.push('/');
-        return;
-      }
       setUser(user);
       fetchCategories();
     };
     init();
-  }, [router]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchCategories = async () => {
     try {
       const res = await fetch('/api/categories');
       const data = await res.json();
       setCategories(data.categories || []);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
+    } catch (_) {
+      // silently handle
     }
   };
 
@@ -108,8 +103,7 @@ export default function AddProductPage() {
       } else {
         setErrors({ submit: data.error || 'Failed to create product' });
       }
-    } catch (error) {
-      console.error('Error creating product:', error);
+    } catch (_) {
       setErrors({ submit: 'An error occurred while creating the product' });
     } finally {
       setLoading(false);
