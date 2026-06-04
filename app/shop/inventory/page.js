@@ -243,10 +243,10 @@ export default function InventoryPage() {
                   <p className="text-3xl font-bold text-green-600">{formatCurrency(stats.totalValue)}</p>
                 </div>
                 <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10" fill="#dcfce7" />
-                    <text x="50%" y="56%" textAnchor="middle" fontSize="10" fontWeight="700" fill="currentColor">K</text>
-                    <path d="M10 8v8m0-4h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <svg className="w-6 h-6 text-green-600" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                    <text x="50%" y="57%" textAnchor="middle" dominantBaseline="middle"
+                      fontSize="11" fontWeight="800" fill="currentColor" fontFamily="Arial, sans-serif">K</text>
                   </svg>
                 </div>
               </div>
