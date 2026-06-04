@@ -88,12 +88,21 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex">
-      {/* ── Left panel — branding ── */}
-      <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 relative overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%)" }}>
-        {/* Subtle grid pattern */}
+      {/* ── Left panel — branding with background image ── */}
+      <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 relative overflow-hidden">
+        {/* Background image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/login-bg.jpg')" }}
+        />
+        {/* Dark gradient overlay — fades image so text is clearly readable */}
+        <div className="absolute inset-0"
+          style={{ background: "linear-gradient(135deg, rgba(10,20,60,0.88) 0%, rgba(15,30,80,0.80) 40%, rgba(20,40,100,0.72) 100%)" }}
+        />
+        {/* Subtle dot grid on top */}
         <div className="absolute inset-0 opacity-10"
-          style={{ backgroundImage: "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.4) 1px, transparent 0)", backgroundSize: "32px 32px" }} />
+          style={{ backgroundImage: "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.5) 1px, transparent 0)", backgroundSize: "28px 28px" }}
+        />
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-between p-12 text-white w-full">
           {/* Logo */}
