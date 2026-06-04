@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '../lib/supabase';
 import Header from '../components/shared/Header';
 import { formatCurrency } from '../lib/utils/currency';
+import Chatbot from '../components/shared/Chatbot';
 
 export default function ShopPage() {
   const [user, setUser] = useState(null);
@@ -51,7 +52,10 @@ export default function ShopPage() {
   if (!user || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
+        <div className="flex flex-col items-center gap-3 animate-fade-in">
+          <div className="w-8 h-8 rounded-full border-2 border-green-600 border-t-transparent animate-spin-slow" />
+          <span className="text-gray-500 text-sm">Loading…</span>
+        </div>
       </div>
     );
   }
@@ -77,15 +81,15 @@ export default function ShopPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
-        <div className="bg-linear-to-r from-green-600 to-green-800 text-white rounded-lg p-6 mb-6">
+        <div className="bg-linear-to-r from-green-600 to-green-800 text-white rounded-lg p-6 mb-6 animate-fade-in">
           <h1 className="text-3xl font-bold mb-2">Shop Dashboard</h1>
           <p className="text-green-100">Manage your products, requests, and inventory</p>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 stagger-children">
           {stats.map((stat, index) => (
-            <div key={index} className="bg-white rounded-lg shadow p-6">
+            <div key={index} className="bg-white rounded-lg shadow p-6 stat-card">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
@@ -118,10 +122,10 @@ export default function ShopPage() {
         )}
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 stagger-children">
           <a
             href="/shop/products"
-            className="bg-blue-600 text-white rounded-lg p-6 hover:bg-blue-700 transition text-center"
+            className="bg-blue-600 text-white rounded-lg p-6 hover:bg-blue-700 transition text-center card-interactive"
           >
             <div className="text-3xl mb-2">📦</div>
             <h3 className="font-semibold">Manage Products</h3>
@@ -130,7 +134,7 @@ export default function ShopPage() {
 
           <a
             href="/shop/requisitions"
-            className="bg-green-600 text-white rounded-lg p-6 hover:bg-green-700 transition text-center"
+            className="bg-green-600 text-white rounded-lg p-6 hover:bg-green-700 transition text-center card-interactive"
           >
             <div className="text-3xl mb-2">📋</div>
             <h3 className="font-semibold">Requisitions</h3>
@@ -139,14 +143,21 @@ export default function ShopPage() {
 
           <a
             href="/shop/inventory"
-            className="bg-yellow-600 text-white rounded-lg p-6 hover:bg-yellow-700 transition text-center"
+            className="bg-yellow-600 text-white rounded-lg p-6 hover:bg-yellow-700 transition text-center card-interactive"
           >
             <div className="text-3xl mb-2">📦</div>
             <h3 className="font-semibold">Inventory</h3>
             <p className="text-sm text-yellow-100 mt-1">Track stock levels and restock alerts</p>
           </a>
 
-
+          <a
+            href="/shop/analytics"
+            className="bg-purple-600 text-white rounded-lg p-6 hover:bg-purple-700 transition text-center card-interactive"
+          >
+            <div className="text-3xl mb-2">📊</div>
+            <h3 className="font-semibold">Analytics</h3>
+            <p className="text-sm text-purple-100 mt-1">View sales and performance</p>
+          </a>
         </div>
 
         {/* Recent Requests */}
@@ -194,6 +205,7 @@ export default function ShopPage() {
           </div>
         </div>
       </main>
+      <Chatbot user={user} />
     </div>
   );
 }

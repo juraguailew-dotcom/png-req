@@ -32,7 +32,7 @@ function StatCard({ icon, label, value, sub, accent }) {
 function QuickAction({ href, icon, title, desc, color }) {
   return (
     <Link href={href}
-      className={`flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:border-gray-300 bg-white hover:shadow-md transition-all group`}>
+      className={`flex items-center gap-4 p-4 rounded-xl border border-gray-200 hover:border-gray-300 bg-white hover:shadow-md transition-all group card-interactive`}>
       <div className={`w-11 h-11 rounded-lg flex items-center justify-center text-2xl shrink-0 ${color}`}>
         {icon}
       </div>
@@ -95,7 +95,7 @@ export default function ContractorDashboard() {
     <div className="space-y-6">
 
       {/* ── Page header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Good day, {name} 👋</h1>
           <p className="text-gray-500 text-sm mt-0.5">Here's your activity summary for the last 30 days.</p>
@@ -110,7 +110,7 @@ export default function ContractorDashboard() {
       </div>
 
       {/* ── Stats row ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 stagger-children">
         <StatCard
           icon={<svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
           label="Total Requisitions"
@@ -144,7 +144,7 @@ export default function ContractorDashboard() {
       </div>
 
       {/* ── Main content grid ── */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 animate-fade-in">
 
         {/* Recent Requisitions table — takes 2/3 */}
         <div className="xl:col-span-2 card overflow-hidden">

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from './lib/supabase';
 import Header from './components/shared/Header';
 import ContractorDashboard from './components/contractor/Dashboard';
+import Chatbot from './components/shared/Chatbot';
 
 export default function Home() {
   const [user, setUser] = useState(null);
@@ -22,7 +23,10 @@ export default function Home() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-500 text-lg">Loading...</div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
+          <span className="text-gray-500 text-sm">Loading…</span>
+        </div>
       </div>
     );
   }
@@ -30,10 +34,10 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header user={user} />
-      
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <ContractorDashboard />
       </main>
+      <Chatbot user={user} />
     </div>
   );
 }

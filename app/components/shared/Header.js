@@ -158,7 +158,7 @@ export default function Header({ user }) {
               </button>
 
               {isUserMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50 animate-scale-in">
                   <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
                     <p className="text-sm font-semibold text-gray-900">{displayName}</p>
                     <p className="text-xs text-white-500 capitalize mt-1">{role?.replace('_', ' ')}</p>
@@ -239,7 +239,7 @@ export default function Header({ user }) {
         )}
 
         {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200 bg-gray-50">
+          <div className="md:hidden py-4 border-t border-gray-200 bg-gray-50 animate-slide-up">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
