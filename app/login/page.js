@@ -54,10 +54,16 @@ export default function LoginPage() {
         data.user.app_metadata?.role ||
         data.user.user_metadata?.role ||
         "contractor";
-      if (userRole === "admin") router.push("/admin");
-      else if (userRole === "hardware_shop") router.push("/shop");
-      else router.push("/");
-      router.refresh();
+
+      // Use window.location for hard navigation to ensure session cookie
+      // is fully set before the new page loads (avoids middleware timing issues)
+      if (userRole === "admin") {
+        window.location.href = "/admin";
+      } else if (userRole === "hardware_shop") {
+        window.location.href = "/shop";
+      } else {
+        window.location.href = "/";
+      }
     }
     setLoading(false);
   };

@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/app/lib/supabase';
 import NotificationBell from './NotificationBell';
+import Chatbot from './Chatbot';
 
 export default function Header({ user }) {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -73,6 +74,7 @@ export default function Header({ user }) {
       : 'text-gray-700 hover:text-blue-600';
 
   return (
+  <>
     <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 gap-6">
@@ -261,5 +263,7 @@ export default function Header({ user }) {
         )}
       </div>
     </header>
+    <Chatbot user={user} />
+  </>
   );
 }

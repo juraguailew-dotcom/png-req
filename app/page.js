@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { createClient } from './lib/supabase';
 import Header from './components/shared/Header';
 import ContractorDashboard from './components/contractor/Dashboard';
-import Chatbot from './components/shared/Chatbot';
 
 export default function Home() {
   const [user, setUser] = useState(null);
