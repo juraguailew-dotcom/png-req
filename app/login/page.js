@@ -318,35 +318,51 @@ export default function LoginPage() {
         </svg>
 
         {/* Content overlay */}
-        <div className="relative z-10 flex flex-col justify-between p-12 text-white w-full">
+        <div className="relative z-10 flex flex-col justify-between p-12 w-full"
+          style={{ color: '#ffffff' }}>
+          {/* Semi-transparent scrim behind text for legibility */}
+          <div className="absolute inset-0 pointer-events-none"
+            style={{ background: 'linear-gradient(135deg, rgba(10,20,55,0.55) 0%, rgba(10,20,55,0.35) 60%, transparent 100%)' }}
+          />
           {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center font-bold text-lg">
+          <div className="flex items-center gap-3" style={{ position: 'relative', zIndex: 1 }}>
+            <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center font-bold text-lg"
+              style={{ color: '#ffffff' }}>
               MR
             </div>
             <div>
-              <p className="font-bold text-base leading-tight">Material Requisition</p>
-              <p className="text-blue-200 text-xs">System</p>
+              <p className="font-bold text-base leading-tight" style={{ color: '#ffffff' }}>Material Requisition</p>
+              <p className="text-xs" style={{ color: '#93c5fd' }}>System</p>
             </div>
           </div>
           {/* Hero text */}
-          <div>
-            <h1 className="text-4xl xl:text-5xl font-bold text-white leading-tight mb-4">
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <h1 className="text-4xl xl:text-5xl font-bold leading-tight mb-4"
+              style={{ color: '#ffffff', textShadow: '0 2px 12px rgba(0,0,0,0.8), 0 1px 3px rgba(0,0,0,0.9)' }}>
               Streamline your<br />procurement workflow
             </h1>
-            <p className="text-blue-100 text-lg max-w-md leading-relaxed">
+            <p className="text-lg max-w-md leading-relaxed"
+              style={{ color: '#bfdbfe', textShadow: '0 1px 6px rgba(0,0,0,0.7)' }}>
               A centralised platform for contractors and hardware suppliers to manage
               material requests, quotations, and fulfilment.
             </p>
             <div className="flex flex-wrap gap-2 mt-8">
               {["Digital Requisitions", "Real-time Quotations", "PDF Generation", "Inventory Tracking", "Role-based Access"].map((f) => (
-                <span key={f} className="px-3 py-1 bg-white/15 backdrop-blur rounded-full text-sm text-blue-50 border border-white/20">
+                <span key={f}
+                  className="px-3 py-1 rounded-full text-sm border"
+                  style={{
+                    color: '#e0f2fe',
+                    backgroundColor: 'rgba(255,255,255,0.12)',
+                    borderColor: 'rgba(255,255,255,0.25)',
+                    textShadow: '0 1px 3px rgba(0,0,0,0.6)',
+                    backdropFilter: 'blur(4px)',
+                  }}>
                   {f}
                 </span>
               ))}
             </div>
           </div>
-          <p className="text-blue-300 text-sm">
+          <p className="text-sm" style={{ color: '#93c5fd', textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
             Material Requisition System © {new Date().getFullYear()}
           </p>
         </div>
