@@ -133,22 +133,191 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
 
-      {/* ── Left panel — branding with background image ── */}
-      <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 relative overflow-hidden">
-        {/* Background image */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('/login-bg.jpg')" }}
-        />
-        {/* Dark gradient overlay — fades image so text is clearly readable */}
-        <div className="absolute inset-0"
-          style={{ background: "linear-gradient(135deg, rgba(10,20,60,0.88) 0%, rgba(15,30,80,0.80) 40%, rgba(20,40,100,0.72) 100%)" }}
-        />
-        {/* Subtle dot grid on top */}
-        <div className="absolute inset-0 opacity-10"
-          style={{ backgroundImage: "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.5) 1px, transparent 0)", backgroundSize: "28px 28px" }}
-        />
-        {/* Content */}
+      {/* ── Left panel — animated electrical tools ── */}
+      <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 relative overflow-hidden"
+        style={{ background: "linear-gradient(135deg, #0f1f3d 0%, #0a1628 50%, #111827 100%)" }}>
+
+        {/* ── Animated SVG scene ── */}
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            {/* Glow filters */}
+            <filter id="glow-blue" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="4" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="glow-orange" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="6" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="glow-soft">
+              <feGaussianBlur stdDeviation="2" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            {/* Radial gradient for center glow */}
+            <radialGradient id="center-glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#1e40af" stopOpacity="0.3"/>
+              <stop offset="100%" stopColor="#0f1f3d" stopOpacity="0"/>
+            </radialGradient>
+          </defs>
+
+          {/* Background center glow */}
+          <ellipse cx="400" cy="300" rx="280" ry="260" fill="url(#center-glow)"/>
+
+          {/* ── Orbit rings ── */}
+          <circle cx="400" cy="300" r="180" fill="none" stroke="#1e40af" strokeWidth="0.8" strokeDasharray="6 4" opacity="0.4">
+            <animateTransform attributeName="transform" type="rotate" from="0 400 300" to="360 400 300" dur="30s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="400" cy="300" r="230" fill="none" stroke="#3b82f6" strokeWidth="0.5" strokeDasharray="3 8" opacity="0.25">
+            <animateTransform attributeName="transform" type="rotate" from="360 400 300" to="0 400 300" dur="45s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="400" cy="300" r="120" fill="none" stroke="#60a5fa" strokeWidth="0.6" strokeDasharray="4 6" opacity="0.3">
+            <animateTransform attributeName="transform" type="rotate" from="0 400 300" to="360 400 300" dur="20s" repeatCount="indefinite"/>
+          </circle>
+
+          {/* ── Centre: Large spinning gear ── */}
+          <g transform="translate(400,300)" filter="url(#glow-blue)">
+            <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="12s" repeatCount="indefinite" additive="sum"/>
+            {/* Outer gear teeth (12 teeth) */}
+            {[0,30,60,90,120,150,180,210,240,270,300,330].map((angle, i) => (
+              <rect key={i}
+                x="-6" y="-64"
+                width="12" height="16"
+                rx="2"
+                fill="#1d4ed8"
+                transform={`rotate(${angle})`}
+              />
+            ))}
+            {/* Gear body */}
+            <circle r="52" fill="#1e3a8a" stroke="#3b82f6" strokeWidth="2"/>
+            <circle r="38" fill="#0f1f3d" stroke="#60a5fa" strokeWidth="1.5"/>
+            <circle r="14" fill="#1d4ed8" stroke="#93c5fd" strokeWidth="1.5"/>
+            {/* Spokes */}
+            {[0,60,120,180,240,300].map((angle, i) => (
+              <line key={i} x1="0" y1="-16" x2="0" y2="-36"
+                stroke="#60a5fa" strokeWidth="3" strokeLinecap="round"
+                transform={`rotate(${angle})`}/>
+            ))}
+          </g>
+
+          {/* ── Orbit 1 (r=120): Drill — fast orbit ── */}
+          <g>
+            <animateTransform attributeName="transform" type="rotate" from="0 400 300" to="360 400 300" dur="8s" repeatCount="indefinite"/>
+            {/* Drill body at (400, 180) relative to orbit centre */}
+            <g transform="translate(400,180)">
+              <g>
+                <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="1.5s" repeatCount="indefinite" additive="sum"/>
+                {/* Drill bit */}
+                <polygon points="0,-22 4,-8 -4,-8" fill="#f97316" filter="url(#glow-orange)"/>
+                <rect x="-8" y="-8" width="16" height="20" rx="3" fill="#ea580c"/>
+                {/* Handle */}
+                <ellipse cx="0" cy="16" rx="10" ry="7" fill="#c2410c"/>
+                {/* Vent lines */}
+                <line x1="-6" y1="2" x2="6" y2="2" stroke="#fed7aa" strokeWidth="1" opacity="0.6"/>
+                <line x1="-6" y1="6" x2="6" y2="6" stroke="#fed7aa" strokeWidth="1" opacity="0.6"/>
+                {/* Glow dot */}
+                <circle cx="0" cy="-24" r="3" fill="#fb923c" opacity="0.8">
+                  <animate attributeName="opacity" values="0.8;0.2;0.8" dur="0.8s" repeatCount="indefinite"/>
+                </circle>
+              </g>
+            </g>
+          </g>
+
+          {/* ── Orbit 2 (r=180): Wrench — medium orbit ── */}
+          <g>
+            <animateTransform attributeName="transform" type="rotate" from="60 400 300" to="420 400 300" dur="15s" repeatCount="indefinite"/>
+            <g transform="translate(400,120)">
+              <g>
+                <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="6s" repeatCount="indefinite" additive="sum"/>
+                {/* Wrench handle */}
+                <rect x="-4" y="-28" width="8" height="42" rx="4" fill="#1d4ed8" stroke="#60a5fa" strokeWidth="1"/>
+                {/* Wrench head */}
+                <path d="M-12,-28 Q-16,-36 -8,-40 L8,-40 Q16,-36 12,-28 L8,-24 L-8,-24 Z"
+                  fill="#2563eb" stroke="#93c5fd" strokeWidth="1"/>
+                {/* Wrench opening */}
+                <circle cx="0" cy="-34" r="6" fill="#0f1f3d" stroke="#60a5fa" strokeWidth="1"/>
+                {/* Bottom end */}
+                <ellipse cx="0" cy="16" rx="6" ry="5" fill="#1e40af" stroke="#3b82f6" strokeWidth="1"/>
+              </g>
+            </g>
+          </g>
+
+          {/* ── Orbit 2 (r=180): Bolt/Lightning — opposite side ── */}
+          <g>
+            <animateTransform attributeName="transform" type="rotate" from="240 400 300" to="600 400 300" dur="15s" repeatCount="indefinite"/>
+            <g transform="translate(400,120)" filter="url(#glow-orange)">
+              <g>
+                <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="3s" repeatCount="indefinite" additive="sum"/>
+                {/* Lightning bolt */}
+                <polygon points="6,-26 -2,-4 4,-4 -6,20 12,-8 4,-8 14,-26"
+                  fill="#fbbf24" stroke="#f59e0b" strokeWidth="0.5"/>
+                <animate attributeName="opacity" values="1;0.5;1" dur="1.2s" repeatCount="indefinite"/>
+              </g>
+            </g>
+          </g>
+
+          {/* ── Orbit 3 (r=230): Screwdriver ── */}
+          <g>
+            <animateTransform attributeName="transform" type="rotate" from="120 400 300" to="480 400 300" dur="22s" repeatCount="indefinite"/>
+            <g transform="translate(400,70)">
+              <g>
+                <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="8s" repeatCount="indefinite" additive="sum"/>
+                {/* Screwdriver tip */}
+                <polygon points="-2,-32 2,-32 1,-20 -1,-20" fill="#94a3b8"/>
+                {/* Shaft */}
+                <rect x="-3" y="-20" width="6" height="30" rx="2" fill="#64748b"/>
+                {/* Handle */}
+                <rect x="-7" y="10" width="14" height="20" rx="4" fill="#1e40af" stroke="#3b82f6" strokeWidth="1"/>
+                {/* Handle grip lines */}
+                <line x1="-5" y1="14" x2="5" y2="14" stroke="#60a5fa" strokeWidth="1" opacity="0.7"/>
+                <line x1="-5" y1="18" x2="5" y2="18" stroke="#60a5fa" strokeWidth="1" opacity="0.7"/>
+                <line x1="-5" y1="22" x2="5" y2="22" stroke="#60a5fa" strokeWidth="1" opacity="0.7"/>
+              </g>
+            </g>
+          </g>
+
+          {/* ── Orbit 3: Small gear ── */}
+          <g>
+            <animateTransform attributeName="transform" type="rotate" from="300 400 300" to="660 400 300" dur="22s" repeatCount="indefinite"/>
+            <g transform="translate(400,70)">
+              <g>
+                <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="-360 0 0" dur="4s" repeatCount="indefinite" additive="sum"/>
+                {[0,45,90,135,180,225,270,315].map((angle, i) => (
+                  <rect key={i} x="-3" y="-20" width="6" height="8" rx="1.5"
+                    fill="#3b82f6" transform={`rotate(${angle})`}/>
+                ))}
+                <circle r="14" fill="#1e3a8a" stroke="#60a5fa" strokeWidth="1.5"/>
+                <circle r="5" fill="#0f1f3d" stroke="#93c5fd" strokeWidth="1"/>
+              </g>
+            </g>
+          </g>
+
+          {/* ── Floating particles / sparks ── */}
+          {[
+            {cx:320,cy:180,r:2.5,dur:"3s",delay:"0s"},
+            {cx:520,cy:200,r:2,dur:"4s",delay:"1s"},
+            {cx:260,cy:350,r:3,dur:"5s",delay:"0.5s"},
+            {cx:560,cy:380,r:2,dur:"3.5s",delay:"2s"},
+            {cx:350,cy:440,r:2.5,dur:"4.5s",delay:"1.5s"},
+            {cx:480,cy:140,r:2,dur:"3s",delay:"2.5s"},
+            {cx:200,cy:280,r:1.5,dur:"6s",delay:"0s"},
+            {cx:600,cy:260,r:1.5,dur:"5.5s",delay:"1s"},
+          ].map((p,i) => (
+            <circle key={i} cx={p.cx} cy={p.cy} r={p.r} fill="#60a5fa" opacity="0.7">
+              <animate attributeName="opacity" values="0.7;0;0.7" dur={p.dur} begin={p.delay} repeatCount="indefinite"/>
+              <animate attributeName="r" values={`${p.r};${p.r*1.8};${p.r}`} dur={p.dur} begin={p.delay} repeatCount="indefinite"/>
+            </circle>
+          ))}
+
+          {/* ── Connection lines from centre to orbiting tools ── */}
+          <line x1="400" y1="300" x2="400" y2="180" stroke="#1e40af" strokeWidth="0.5" strokeDasharray="4 4" opacity="0.3">
+            <animate attributeName="opacity" values="0.3;0.1;0.3" dur="2s" repeatCount="indefinite"/>
+          </line>
+          <line x1="400" y1="300" x2="400" y2="70" stroke="#3b82f6" strokeWidth="0.5" strokeDasharray="3 6" opacity="0.2">
+            <animate attributeName="opacity" values="0.2;0.05;0.2" dur="3s" repeatCount="indefinite"/>
+          </line>
+        </svg>
+
+        {/* Content overlay */}
         <div className="relative z-10 flex flex-col justify-between p-12 text-white w-full">
           {/* Logo */}
           <div className="flex items-center gap-3">
