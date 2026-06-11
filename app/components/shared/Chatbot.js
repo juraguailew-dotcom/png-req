@@ -281,8 +281,8 @@ export default function Chatbot({ user }) {
       <button
         onClick={() => (isOpen ? setIsOpen(false) : openChat())}
         aria-label="Open assistant"
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 group"
-        style={{ background: 'linear-gradient(135deg, #1e40af, #1d4ed8)' }}
+        className="fixed bottom-6 right-4 z-50 w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all duration-300"
+        style={{ background: 'linear-gradient(135deg, #1e40af, #1d4ed8)', marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {isOpen ? (
           <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -302,8 +302,11 @@ export default function Chatbot({ user }) {
       {/* Chat window */}
       {isOpen && (
         <div
-          className="chatbot-window fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden"
-          style={{ height: '520px' }}
+          className="chatbot-window fixed bottom-24 right-4 z-50 bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden"
+          style={{
+            width: 'min(384px, calc(100vw - 2rem))',
+            height: 'min(520px, calc(100vh - 120px))',
+          }}
         >
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100"

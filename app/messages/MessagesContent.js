@@ -213,15 +213,18 @@ export default function MessagesContent() {
 
   if (!user) return null;
 
+  const showConversationList = !selectedUser;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header user={user} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" style={{ height: 'calc(100vh - 200px)' }}>
-          <div className="grid grid-cols-1 md:grid-cols-3 h-full">
-            {/* Conversations List */}
-            <div className="border-r border-gray-200 overflow-y-auto bg-gray-50">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+          style={{ height: 'min(calc(100vh - 130px), 700px)' }}>
+          <div className="h-full flex flex-col md:grid md:grid-cols-3">
+            {/* Conversations List — hidden on mobile when a conversation is open */}
+            <div className={`${selectedUser ? 'hidden md:flex' : 'flex'} flex-col border-r border-gray-200 overflow-y-auto bg-gray-50 md:block`}>
               <div className="p-5 border-b border-gray-200 bg-white sticky top-0">
                 <h2 className="text-lg font-semibold text-gray-900">Messages</h2>
                 <p className="text-xs text-gray-600 mt-1">Recent conversations</p>
@@ -307,17 +310,27 @@ export default function MessagesContent() {
               )}
             </div>
 
-            {/* Messages Area */}
-            <div className="md:col-span-2 flex flex-col bg-white">
+            {/* Messages Area — full screen on mobile when conversation selected */}
+            <div className={`${selectedUser ? 'flex' : 'hidden md:flex'} md:col-span-2 flex-col bg-white`}>
               {selectedUser ? (
                 <>
-                  {/* Chat Header */}
-                  <div className="p-5 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                  {/* Chat Header — includes back button for mobile */}
+                  <div className="p-4 sm:p-5 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
+                    <div className="flex items-center gap-3">
+                      {/* Back button — mobile only */}
+                      <button
+                        onClick={() => setSelectedUser(null)}
+                        className="md:hidden p-2 -ml-1 text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition"
+                        aria-label="Back to conversations"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold shrink-0">
                         {selectedUser.full_name?.charAt(0).toUpperCase() || selectedUser.email?.charAt(0).toUpperCase()}
                       </div>
-                      <div className="ml-3">
+                      <div>
                         <p className="font-medium text-gray-900">{selectedUser.full_name || selectedUser.email}</p>
                         <p className="text-xs text-gray-500 capitalize">{selectedUser.role?.replace('_', ' ')}</p>
                       </div>

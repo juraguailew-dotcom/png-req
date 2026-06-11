@@ -143,7 +143,7 @@ export default function AdminPage() {
 
       <div className="max-w-6xl mx-auto p-6 md:p-10">
         {/* Stats */}
-        <div className="grid grid-cols-5 gap-4 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
           {[
             { label: "Total", value: requests.length, color: "text-blue-600" },
             { label: "Pending", value: requests.filter(r => r.status === "pending").length, color: "text-yellow-600" },
@@ -184,7 +184,8 @@ export default function AdminPage() {
               {filtered.length === 0 ? (
                 <p className="text-slate-400 italic text-sm p-6">No requests found.</p>
               ) : (
-                <table className="w-full text-sm">
+                <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[700px]">
                   <thead className="bg-slate-50 border-b border-slate-200">
                     <tr>
                       {["Items", "Contractor", "Total", "Date", "Status", "Assigned Shop", "Actions"].map(h => (
@@ -261,6 +262,7 @@ export default function AdminPage() {
                     ))}
                   </tbody>
                 </table>
+                </div>
               )}
             </div>
           </>
@@ -274,7 +276,8 @@ export default function AdminPage() {
             ) : users.length === 0 ? (
               <p className="text-slate-400 italic text-sm p-6">No users found.</p>
             ) : (
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[600px]">
                 <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
                     {["Name", "Email", "Role", "Joined", "Change Role"].map(h => (
@@ -309,6 +312,7 @@ export default function AdminPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         )}

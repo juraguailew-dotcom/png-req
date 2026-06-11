@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import PageTransition from "./components/PageTransition";
@@ -12,6 +12,14 @@ const interSans = Inter({
 export const metadata: Metadata = {
   title: "Material Requisition System",
   description: "Digital procurement platform for contractors and hardware suppliers in Papua New Guinea.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: "#1e40af",
 };
 
 export default function RootLayout({

@@ -163,7 +163,7 @@ export default function Header({ user }) {
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50 animate-scale-in">
                   <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
                     <p className="text-sm font-semibold text-gray-900">{displayName}</p>
-                    <p className="text-xs text-white-500 capitalize mt-1">{role?.replace('_', ' ')}</p>
+                    <p className="text-xs text-gray-500 capitalize mt-1">{role?.replace('_', ' ')}</p>
                   </div>
                   <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition">
                     Profile Settings

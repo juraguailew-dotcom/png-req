@@ -65,30 +65,30 @@ export default function RequisitionsPage() {
       <Header user={user} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6 flex justify-between items-center">
+        <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">My Requisitions</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Requisitions</h1>
             <p className="text-gray-600 mt-1">Track and manage your purchase requests</p>
           </div>
           {user.app_metadata?.role === 'contractor' && (
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <a
                 href="/requisitions/quoted"
-                className="bg-purple-600 text-white px-5 py-3 rounded-lg hover:bg-purple-700 font-medium flex items-center gap-2"
+                className="bg-purple-600 text-white px-4 py-2.5 rounded-lg hover:bg-purple-700 font-medium flex items-center justify-center gap-2 text-sm"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 Quoted Requests
               </a>
               <a
                 href="/requisitions/new"
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium flex items-center"
+                className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 font-medium flex items-center justify-center text-sm"
               >
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                Create New Request
+                New Request
               </a>
             </div>
           )}
