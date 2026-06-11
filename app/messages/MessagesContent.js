@@ -82,22 +82,32 @@ export default function MessagesContent() {
     }
   };
 
-  const fetchUserDetails = async (userId) => {
+  const fetchUserDetails = async (targetUserId) => {
     try {
-      const res = await fetch(`/api/users?user_id=${encodeURIComponent(userId)}`);
-      const data = await res.json();
-      setSelectedUser(data.users?.[0] || null);
-    } catch (error) {
+      // Use Supabase client to look up the user's public profile
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('users')
+        .select('id, email, full_name, role, business_name')
+        .eq('id', targetUserId)
+        .single();
+      if (data) setSelectedUser(data);
+    } catch (_) {
       // silently handle
     }
   };
 
   const fetchContacts = async (currentUser) => {
     try {
-      const res = await fetch('/api/users');
-      const data = await res.json();
-      setContacts(data.users || []);
-    } catch (error) {
+      // Load other users for the contacts panel via Supabase client
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('users')
+        .select('id, email, full_name, role, business_name')
+        .neq('id', currentUser.id)
+        .order('full_name');
+      setContacts(data || []);
+    } catch (_) {
       // silently handle
     }
   };

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { createClient } from '../lib/supabase';
 import Header from '../components/shared/Header';
 import { formatCurrency } from '../lib/utils/currency';
-import Chatbot from '../components/shared/Chatbot';
 
 export default function ShopPage() {
   const [user, setUser] = useState(null);
@@ -205,7 +204,6 @@ export default function ShopPage() {
           </div>
         </div>
       </main>
-      <Chatbot user={user} />
     </div>
   );
 }

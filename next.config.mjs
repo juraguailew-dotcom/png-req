@@ -99,9 +99,6 @@ const nextConfig = {
 
   // Internationalization (if needed)
   i18n: undefined,
-
-  // Static generation
-  staticPageGenerationTimeout: 60,
 };
 
 export default nextConfig;

@@ -223,9 +223,9 @@ export default function ProfilePage() {
               </div>
               <div>
                 <p className="text-gray-400 text-xs mb-1">Account Status</p>
-                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${form.active !== false ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${form.active !== false ? 'bg-green-500' : 'bg-red-500'}`} />
-                  {form.active !== false ? 'Active' : 'Inactive'}
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${form.verified ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${form.verified ? 'bg-green-500' : 'bg-amber-500'}`} />
+                  {form.verified ? 'Verified' : 'Pending Verification'}
                 </span>
               </div>
             </div>

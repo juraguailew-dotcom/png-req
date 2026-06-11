@@ -82,6 +82,7 @@ export async function logAudit(actor, action, entity, entity_id, details = {}) {
     const { error } = await supabaseAdmin.from('audit_logs').insert({
       actor_id: actor?.id || null,
       actor_email: actor?.email || null,
+      actor_role: actor?.app_metadata?.role || actor?.user_metadata?.role || null,
       action,
       entity,
       entity_id: String(entity_id),
