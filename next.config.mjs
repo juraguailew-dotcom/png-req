@@ -3,6 +3,15 @@ const nextConfig = {
   // Performance and optimization
   compress: true,
   productionBrowserSourceMaps: false,
+
+  // Allow local network access without cross-origin warnings
+  // (needed when accessing via 192.168.x.x or 10.x.x.x on local network)
+  allowedDevOrigins: [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://192.168.*:3000',
+    'http://10.*:3000',
+  ],
   
   // Security and compliance
   headers: async () => {
