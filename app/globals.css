@@ -99,11 +99,10 @@ button {
   font-family: inherit;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
 }
-button:hover:not(:disabled) { transform: translateY(-1px); }
-button:active:not(:disabled) { transform: translateY(0); }
-button:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+/* Only apply lift effect to .btn class — not to ALL buttons */
+button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ─── Scrollbar ──────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -388,17 +387,14 @@ button:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important;
   white-space: nowrap;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 }
-/* Ripple effect on click */
-.btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(255,255,255,0.2);
-  opacity: 0;
-  transition: opacity 0.2s;
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
-.btn:active::after { opacity: 1; }
+.btn:active:not(:disabled) { transform: translateY(0); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
 .btn-primary { background: var(--brand); color: #fff; border-color: var(--brand); }
 .btn-primary:hover:not(:disabled) {

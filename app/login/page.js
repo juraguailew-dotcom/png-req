@@ -397,17 +397,30 @@ export default function LoginPage() {
 
           {/* Tab switcher */}
           <div className="flex bg-gray-100 rounded-lg p-1 mb-6 gap-1">
-            {["login", "register"].map((m) => (
-              <button key={m} type="button" onClick={() => switchMode(m)}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-all ${
-                  mode === m
-                    ? "bg-white text-blue-700 shadow-sm border border-gray-200"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                {m === "login" ? "Sign In" : "Register"}
-              </button>
-            ))}
+            <button
+              type="button"
+              onClick={() => switchMode("login")}
+              style={{ transform: 'none' }}
+              className={`flex-1 py-2.5 px-4 rounded-md text-sm font-semibold ${
+                mode === "login"
+                  ? "bg-white text-blue-700 shadow-sm border border-gray-200"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => switchMode("register")}
+              style={{ transform: 'none' }}
+              className={`flex-1 py-2.5 px-4 rounded-md text-sm font-semibold ${
+                mode === "register"
+                  ? "bg-white text-blue-700 shadow-sm border border-gray-200"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Register
+            </button>
           </div>
 
           {/* Email confirmation notice */}
@@ -495,8 +508,12 @@ export default function LoginPage() {
               </button>
               <p className="text-center text-sm text-gray-500">
                 Don&apos;t have an account?{" "}
-                <button type="button" onClick={() => switchMode("register")}
-                  className="text-blue-600 hover:text-blue-700 font-semibold">
+                <button
+                  type="button"
+                  onClick={() => switchMode("register")}
+                  style={{ transform: 'none', background: 'none', border: 'none', padding: 0 }}
+                  className="text-blue-600 hover:text-blue-700 font-semibold cursor-pointer"
+                >
                   Register here
                 </button>
               </p>
@@ -569,8 +586,12 @@ export default function LoginPage() {
               </button>
               <p className="text-center text-sm text-gray-500">
                 Already have an account?{" "}
-                <button type="button" onClick={() => switchMode("login")}
-                  className="text-blue-600 hover:text-blue-700 font-semibold">
+                <button
+                  type="button"
+                  onClick={() => switchMode("login")}
+                  style={{ transform: 'none', background: 'none', border: 'none', padding: 0 }}
+                  className="text-blue-600 hover:text-blue-700 font-semibold cursor-pointer"
+                >
                   Sign in here
                 </button>
               </p>
